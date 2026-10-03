@@ -240,14 +240,43 @@ public partial class MainWindow : Window
         HwndSource.FromHwnd(handle)?.AddHook(WndProc);
 
         _tray = new TrayIcon(handle, "Dynamic Island");
+        _tray.Activated += (_, _) =>
+        {
+            _isPinned = true;
+            Expand();
+        };
         _tray.MenuRequested += (_, _) => ShowTrayMenu();
         _tray.RestartRequested += (_, _) => RestartApplication();
+
+        UpdateTrayToolTip();
 
         Closed += (_, _) =>
         {
             _tray?.Dispose();
             _tray = null;
         };
+    }
+
+    private void UpdateTrayToolTip()
+    {
+        if (_tray is null)
+        {
+            return;
+        }
+
+        var music = _viewModel?.Music;
+        var tip = "Dynamic Island";
+
+        if (music is not null && music.Track.HasTrack)
+        {
+            tip = $"Dynamic Island — {music.Track.DisplayTitle} · {music.Track.DisplayArtist}";
+            if (music.IsMuted)
+            {
+                tip += " (без звука)";
+            }
+        }
+
+        _tray.SetToolTip(tip);
     }
 
     private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
@@ -425,12 +454,24 @@ public partial class MainWindow : Window
         if (_viewModel is not null)
         {
             _viewModel.PropertyChanged -= OnViewModelPropertyChanged;
+            _viewModel.Music.PropertyChanged -= OnMusicPropertyChanged;
         }
 
         _viewModel = DataContext as MainViewModel;
         if (_viewModel is not null)
         {
             _viewModel.PropertyChanged += OnViewModelPropertyChanged;
+            _viewModel.Music.PropertyChanged += OnMusicPropertyChanged;
+        }
+
+        UpdateTrayToolTip();
+    }
+
+    private void OnMusicPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName is nameof(MusicViewModel.Track) or nameof(MusicViewModel.IsMuted))
+        {
+            UpdateTrayToolTip();
         }
     }
 
@@ -552,6 +593,21 @@ public partial class MainWindow : Window
         {
             _isPinned = true;
             Expand();
+        }
+    }
+
+    private void OnIslandRightButtonUp(object sender, MouseButtonEventArgs e)
+    {
+        // Popups need an active window for mouse capture, so activate first and
+        // open the menu explicitly (the automatic handler is unreliable here).
+        ActivateForInput();
+
+        if (Island.ContextMenu is { IsOpen: false } menu)
+        {
+            e.Handled = true;
+            menu.PlacementTarget = Island;
+            menu.Placement = PlacementMode.MousePoint;
+            menu.IsOpen = true;
         }
     }
 

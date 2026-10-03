@@ -16,6 +16,7 @@ internal sealed class TrayIcon : IDisposable
     private const int WM_RBUTTONUP = 0x0205;
 
     private const int NIM_ADD = 0x00000000;
+    private const int NIM_MODIFY = 0x00000001;
     private const int NIM_DELETE = 0x00000002;
     private const int NIF_MESSAGE = 0x00000001;
     private const int NIF_ICON = 0x00000002;
@@ -27,6 +28,8 @@ internal sealed class TrayIcon : IDisposable
     private readonly bool _ownsIcon;
     private IntPtr _icon;
     private bool _added;
+
+    public event EventHandler? Activated;
 
     public event EventHandler? MenuRequested;
 
@@ -52,8 +55,10 @@ internal sealed class TrayIcon : IDisposable
 
         switch (message)
         {
-            case WM_RBUTTONUP:
             case WM_LBUTTONUP:
+                Activated?.Invoke(this, EventArgs.Empty);
+                return true;
+            case WM_RBUTTONUP:
                 MenuRequested?.Invoke(this, EventArgs.Empty);
                 return true;
             case WM_LBUTTONDBLCLK:
@@ -62,6 +67,19 @@ internal sealed class TrayIcon : IDisposable
             default:
                 return false;
         }
+    }
+
+    public void SetToolTip(string tooltip)
+    {
+        if (!_added)
+        {
+            return;
+        }
+
+        var data = CreateData();
+        data.uFlags = NIF_TIP;
+        data.szTip = tooltip.Length > 120 ? tooltip[..120] : tooltip;
+        Shell_NotifyIcon(NIM_MODIFY, ref data);
     }
 
     private NOTIFYICONDATA CreateData() => new()

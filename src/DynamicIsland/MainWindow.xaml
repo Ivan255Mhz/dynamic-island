@@ -32,7 +32,8 @@
                 ClipToBounds="True"
                 MouseEnter="OnIslandMouseEnter"
                 MouseLeave="OnIslandMouseLeave"
-                MouseLeftButtonUp="OnIslandClick">
+                MouseLeftButtonUp="OnIslandClick"
+                PreviewMouseRightButtonUp="OnIslandRightButtonUp">
             <Border.ContextMenu>
                 <ContextMenu Opened="OnIslandMenuOpening">
                     <MenuItem Header="Расположение">
