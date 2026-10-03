@@ -5,6 +5,4 @@ public enum IslandDock
 {
     Top,
     Bottom,
-    Left,
-    Right,
 }

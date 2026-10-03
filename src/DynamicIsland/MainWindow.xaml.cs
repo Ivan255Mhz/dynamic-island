@@ -307,8 +307,6 @@ public partial class MainWindow : Window
             {
                 (IslandDock.Top, "Сверху"),
                 (IslandDock.Bottom, "Снизу (над панелью)"),
-                (IslandDock.Left, "Слева"),
-                (IslandDock.Right, "Справа"),
             })
             {
                 var item = new MenuItem { Header = title, IsCheckable = true };
@@ -397,22 +395,10 @@ public partial class MainWindow : Window
             case IslandDock.Bottom:
                 Island.HorizontalAlignment = HorizontalAlignment.Center;
                 Island.VerticalAlignment = VerticalAlignment.Bottom;
-                Island.LayoutTransform = null;
-                break;
-            case IslandDock.Left:
-                Island.HorizontalAlignment = HorizontalAlignment.Left;
-                Island.VerticalAlignment = VerticalAlignment.Center;
-                Island.LayoutTransform = new RotateTransform(-90);
-                break;
-            case IslandDock.Right:
-                Island.HorizontalAlignment = HorizontalAlignment.Right;
-                Island.VerticalAlignment = VerticalAlignment.Center;
-                Island.LayoutTransform = new RotateTransform(90);
                 break;
             default:
                 Island.HorizontalAlignment = HorizontalAlignment.Center;
                 Island.VerticalAlignment = VerticalAlignment.Top;
-                Island.LayoutTransform = null;
                 break;
         }
 
@@ -427,8 +413,6 @@ public partial class MainWindow : Window
         var (left, top) = _dock switch
         {
             IslandDock.Bottom => (work.Left + ((work.Width - Width) / 2), work.Bottom - Height),
-            IslandDock.Left => (work.Left, work.Top + ((work.Height - Height) / 2)),
-            IslandDock.Right => (work.Right - Width, work.Top + ((work.Height - Height) / 2)),
             _ => (work.Left + ((work.Width - Width) / 2), work.Top),
         };
 

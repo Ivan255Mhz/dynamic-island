@@ -28,8 +28,6 @@ public static class BorderEx
 
     public static void Apply(Border border, double radius)
     {
-        // Left/Right are rendered rotated 90°, so the shape keeps a flat "top"
-        // in local space (which becomes the flat side against the screen edge).
         border.CornerRadius = Dock == IslandDock.Bottom
             ? new CornerRadius(radius, radius, 0, 0)
             : new CornerRadius(0, 0, radius, radius);
