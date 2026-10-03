@@ -22,6 +22,7 @@
 |---|---|
 | ![Музыка](docs/screenshots/02-music.png) | ![Буфер обмена](docs/screenshots/03-clipboard.png) |
 | ![Скриншоты](docs/screenshots/04-screenshots.png) | ![Переводчик](docs/screenshots/05-translator.png) |
+| ![Нижнее расположение](docs/screenshots/06-bottom.png) | ![Свёрнутое состояние](docs/screenshots/01-collapsed.png) |
 
 ## Требования
 
