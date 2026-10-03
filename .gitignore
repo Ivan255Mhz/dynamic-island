@@ -1,0 +1,16 @@
+## .NET / Visual Studio
+bin/
+obj/
+*.user
+*.suo
+.vs/
+
+## Rider
+.idea/
+
+## Publish output
+publish/
+artifacts/
+
+## Build logs
+*.binlog
