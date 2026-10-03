@@ -21,6 +21,11 @@ public sealed class GoogleTranslationService : ITranslationService
     public GoogleTranslationService(HttpClient http)
     {
         _http = http;
+        if (_http.Timeout == Timeout.InfiniteTimeSpan || _http.Timeout > TimeSpan.FromSeconds(15))
+        {
+            _http.Timeout = TimeSpan.FromSeconds(10);
+        }
+
         if (!_http.DefaultRequestHeaders.UserAgent.Any())
         {
             _http.DefaultRequestHeaders.UserAgent.ParseAdd(
@@ -36,7 +41,7 @@ public sealed class GoogleTranslationService : ITranslationService
     {
         if (string.IsNullOrWhiteSpace(text))
         {
-            return new TranslationResult(text, string.Empty, sourceLanguage, targetLanguage);
+            return new TranslationResult(text, string.Empty, "auto", targetLanguage);
         }
 
         var source = string.IsNullOrWhiteSpace(sourceLanguage) ? "auto" : sourceLanguage;

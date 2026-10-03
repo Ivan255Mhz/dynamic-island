@@ -153,7 +153,7 @@ public sealed partial class TranslatorViewModel : ObservableObject
         {
             if (requestId == _requestId)
             {
-                Error = $"Ошибка перевода: {ex.Message}";
+                Error = DescribeError(ex);
             }
 
             Trace($"error {ex}");
@@ -165,6 +165,26 @@ public sealed partial class TranslatorViewModel : ObservableObject
                 IsBusy = false;
             }
         }
+    }
+
+    private static string DescribeError(Exception exception)
+    {
+        for (var current = exception; current is not null; current = current.InnerException)
+        {
+            switch (current)
+            {
+                case System.Net.Http.HttpRequestException http:
+                    return http.StatusCode is null
+                        ? "Нет подключения к интернету"
+                        : "Сервис перевода недоступен, попробуйте позже";
+                case System.Net.Sockets.SocketException:
+                    return "Нет подключения к интернету";
+                case TaskCanceledException or TimeoutException:
+                    return "Превышено время ожидания переводчика";
+            }
+        }
+
+        return $"Ошибка перевода: {exception.Message}";
     }
 
     private static void Trace(string message)
