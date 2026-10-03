@@ -28,13 +28,11 @@ public static class BorderEx
 
     public static void Apply(Border border, double radius)
     {
-        border.CornerRadius = Dock switch
-        {
-            IslandDock.Bottom => new CornerRadius(radius, radius, 0, 0),
-            IslandDock.Left => new CornerRadius(0, radius, radius, 0),
-            IslandDock.Right => new CornerRadius(radius, 0, 0, radius),
-            _ => new CornerRadius(0, 0, radius, radius),
-        };
+        // Left/Right are rendered rotated 90°, so the shape keeps a flat "top"
+        // in local space (which becomes the flat side against the screen edge).
+        border.CornerRadius = Dock == IslandDock.Bottom
+            ? new CornerRadius(radius, radius, 0, 0)
+            : new CornerRadius(0, 0, radius, radius);
     }
 
     private static void OnAnimatedRadiusChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)

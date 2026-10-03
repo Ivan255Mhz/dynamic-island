@@ -397,18 +397,22 @@ public partial class MainWindow : Window
             case IslandDock.Bottom:
                 Island.HorizontalAlignment = HorizontalAlignment.Center;
                 Island.VerticalAlignment = VerticalAlignment.Bottom;
+                Island.LayoutTransform = null;
                 break;
             case IslandDock.Left:
                 Island.HorizontalAlignment = HorizontalAlignment.Left;
                 Island.VerticalAlignment = VerticalAlignment.Center;
+                Island.LayoutTransform = new RotateTransform(-90);
                 break;
             case IslandDock.Right:
                 Island.HorizontalAlignment = HorizontalAlignment.Right;
                 Island.VerticalAlignment = VerticalAlignment.Center;
+                Island.LayoutTransform = new RotateTransform(90);
                 break;
             default:
                 Island.HorizontalAlignment = HorizontalAlignment.Center;
                 Island.VerticalAlignment = VerticalAlignment.Top;
+                Island.LayoutTransform = null;
                 break;
         }
 

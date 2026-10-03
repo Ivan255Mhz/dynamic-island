@@ -6,7 +6,7 @@
         xmlns:views="clr-namespace:DynamicIsland.Views"
         mc:Ignorable="d"
         Title="Dynamic Island"
-        Width="400" Height="280"
+        Width="400" Height="400"
         WindowStyle="None"
         AllowsTransparency="True"
         Background="{x:Null}"
