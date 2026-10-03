@@ -6,7 +6,7 @@
         xmlns:views="clr-namespace:DynamicIsland.Views"
         mc:Ignorable="d"
         Title="Dynamic Island"
-        Width="400" Height="252"
+        Width="400" Height="280"
         WindowStyle="None"
         AllowsTransparency="True"
         Background="{x:Null}"
@@ -34,7 +34,14 @@
                 MouseLeave="OnIslandMouseLeave"
                 MouseLeftButtonUp="OnIslandClick">
             <Border.ContextMenu>
-                <ContextMenu>
+                <ContextMenu Opened="OnIslandMenuOpening">
+                    <MenuItem Header="Расположение">
+                        <MenuItem Header="Сверху" Tag="Top" IsCheckable="True" Click="OnDockClick" />
+                        <MenuItem Header="Снизу (над панелью)" Tag="Bottom" IsCheckable="True" Click="OnDockClick" />
+                        <MenuItem Header="Слева" Tag="Left" IsCheckable="True" Click="OnDockClick" />
+                        <MenuItem Header="Справа" Tag="Right" IsCheckable="True" Click="OnDockClick" />
+                    </MenuItem>
+                    <Separator />
                     <MenuItem Header="Свернуть" Click="OnCollapseClick" />
                     <MenuItem Header="Перезапустить" Click="OnRestartClick" />
                     <Separator />

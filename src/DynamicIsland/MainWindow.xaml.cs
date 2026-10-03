@@ -10,6 +10,7 @@ using System.Windows.Threading;
 using DynamicIsland.Animations;
 using DynamicIsland.Infrastructure;
 using DynamicIsland.Interop;
+using DynamicIsland.Models;
 using DynamicIsland.ViewModels;
 
 namespace DynamicIsland;
@@ -40,10 +41,13 @@ public partial class MainWindow : Window
     private static readonly QuadraticEase EaseIn = new() { EasingMode = EasingMode.EaseIn };
 
     private readonly DispatcherTimer _collapseTimer;
+    private readonly AppSettings _settings;
+    private readonly Dictionary<IslandDock, MenuItem> _dockItems = new();
 
     private MainViewModel? _viewModel;
     private bool _isExpanded;
     private bool _isPinned;
+    private IslandDock _dock;
     private TrayIcon? _tray;
     private ContextMenu? _trayMenu;
     private MenuItem? _autostartItem;
@@ -57,6 +61,10 @@ public partial class MainWindow : Window
             AllowsTransparency = false;
             Background = Brushes.Black;
         }
+
+        _settings = SettingsStore.Load();
+        _dock = _settings.Dock;
+        BorderEx.Dock = _dock;
 
         _collapseTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(280) };
         _collapseTimer.Tick += OnCollapseTimerTick;
@@ -294,7 +302,23 @@ public partial class MainWindow : Window
             var exit = new MenuItem { Header = "Выход" };
             exit.Click += (_, _) => System.Windows.Application.Current.Shutdown();
 
+            var dockMenu = new MenuItem { Header = "Расположение" };
+            foreach (var (dock, title) in new (IslandDock Dock, string Title)[]
+            {
+                (IslandDock.Top, "Сверху"),
+                (IslandDock.Bottom, "Снизу (над панелью)"),
+                (IslandDock.Left, "Слева"),
+                (IslandDock.Right, "Справа"),
+            })
+            {
+                var item = new MenuItem { Header = title, IsCheckable = true };
+                item.Click += (_, _) => SetDock(dock);
+                dockMenu.Items.Add(item);
+                _dockItems[dock] = item;
+            }
+
             _trayMenu.Items.Add(show);
+            _trayMenu.Items.Add(dockMenu);
             _trayMenu.Items.Add(_autostartItem);
             _trayMenu.Items.Add(new Separator());
             _trayMenu.Items.Add(restart);
@@ -302,6 +326,10 @@ public partial class MainWindow : Window
         }
 
         _autostartItem!.IsChecked = StartupRegistry.IsEnabled();
+        foreach (var (dock, item) in _dockItems)
+        {
+            item.IsChecked = dock == _dock;
+        }
     }
 
     private void OnRestartClick(object sender, RoutedEventArgs e) => RestartApplication();
@@ -317,8 +345,91 @@ public partial class MainWindow : Window
 
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
-        Left = (SystemParameters.PrimaryScreenWidth - Width) / 2;
-        Top = 0;
+        ApplyDock();
+    }
+
+    private void OnDockClick(object sender, RoutedEventArgs e)
+    {
+        if (sender is MenuItem item && item.Tag is string tag && Enum.TryParse<IslandDock>(tag, out var dock))
+        {
+            SetDock(dock);
+        }
+    }
+
+    private void OnIslandMenuOpening(object sender, RoutedEventArgs e)
+    {
+        if (Island.ContextMenu is not ContextMenu menu)
+        {
+            return;
+        }
+
+        foreach (var top in menu.Items.OfType<MenuItem>())
+        {
+            foreach (var sub in top.Items.OfType<MenuItem>())
+            {
+                if (sub.Tag is string tag && Enum.TryParse<IslandDock>(tag, out var dock))
+                {
+                    sub.IsChecked = dock == _dock;
+                }
+            }
+        }
+    }
+
+    private void SetDock(IslandDock dock)
+    {
+        if (_dock == dock)
+        {
+            ApplyDock();
+            return;
+        }
+
+        _dock = dock;
+        _settings.Dock = dock;
+        BorderEx.Dock = dock;
+        SettingsStore.Save(_settings);
+        ApplyDock();
+    }
+
+    private void ApplyDock()
+    {
+        switch (_dock)
+        {
+            case IslandDock.Bottom:
+                Island.HorizontalAlignment = HorizontalAlignment.Center;
+                Island.VerticalAlignment = VerticalAlignment.Bottom;
+                break;
+            case IslandDock.Left:
+                Island.HorizontalAlignment = HorizontalAlignment.Left;
+                Island.VerticalAlignment = VerticalAlignment.Center;
+                break;
+            case IslandDock.Right:
+                Island.HorizontalAlignment = HorizontalAlignment.Right;
+                Island.VerticalAlignment = VerticalAlignment.Center;
+                break;
+            default:
+                Island.HorizontalAlignment = HorizontalAlignment.Center;
+                Island.VerticalAlignment = VerticalAlignment.Top;
+                break;
+        }
+
+        BorderEx.Apply(Island, _isExpanded ? ExpandedRadius : CollapsedRadius);
+        PositionWindow();
+    }
+
+    private void PositionWindow()
+    {
+        var work = SystemParameters.WorkArea;
+
+        var (left, top) = _dock switch
+        {
+            IslandDock.Bottom => (work.Left + ((work.Width - Width) / 2), work.Bottom - Height),
+            IslandDock.Left => (work.Left, work.Top + ((work.Height - Height) / 2)),
+            IslandDock.Right => (work.Right - Width, work.Top + ((work.Height - Height) / 2)),
+            _ => (work.Left + ((work.Width - Width) / 2), work.Top),
+        };
+
+        Left = left;
+        Top = top;
     }
 
     private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)

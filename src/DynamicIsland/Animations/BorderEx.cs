@@ -1,15 +1,18 @@
 using System.Windows;
 using System.Windows.Controls;
+using DynamicIsland.Models;
 
 namespace DynamicIsland.Animations;
 
 /// <summary>
 /// Attached animatable radius. WPF has no built-in CornerRadiusAnimation, so we
-/// animate a plain double and push it into <see cref="Border.CornerRadius"/>
-/// (top corners stay square to keep the notch flush with the screen edge).
+/// animate a plain double and push it into <see cref="Border.CornerRadius"/>.
+/// The rounded corners follow the docked screen edge (flat side against it).
 /// </summary>
 public static class BorderEx
 {
+    public static IslandDock Dock { get; set; } = IslandDock.Top;
+
     public static readonly DependencyProperty AnimatedRadiusProperty =
         DependencyProperty.RegisterAttached(
             "AnimatedRadius",
@@ -23,11 +26,22 @@ public static class BorderEx
     public static void SetAnimatedRadius(DependencyObject element, double value)
         => element.SetValue(AnimatedRadiusProperty, value);
 
+    public static void Apply(Border border, double radius)
+    {
+        border.CornerRadius = Dock switch
+        {
+            IslandDock.Bottom => new CornerRadius(radius, radius, 0, 0),
+            IslandDock.Left => new CornerRadius(0, radius, radius, 0),
+            IslandDock.Right => new CornerRadius(radius, 0, 0, radius),
+            _ => new CornerRadius(0, 0, radius, radius),
+        };
+    }
+
     private static void OnAnimatedRadiusChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
         if (d is Border border)
         {
-            border.CornerRadius = new CornerRadius(0, 0, (double)e.NewValue, (double)e.NewValue);
+            Apply(border, (double)e.NewValue);
         }
     }
 }
