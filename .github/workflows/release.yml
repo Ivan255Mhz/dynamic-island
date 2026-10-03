@@ -14,10 +14,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: "10.0.x"
 
@@ -34,14 +34,17 @@ jobs:
       - name: Package
         shell: pwsh
         run: |
+          $version = "${{ github.ref_name }}".TrimStart('v')
           New-Item -ItemType Directory -Force -Path stage | Out-Null
           Copy-Item publish/DynamicIsland.exe stage
           Copy-Item README.md stage
           Copy-Item LICENSE stage
-          Compress-Archive -Path stage/* -DestinationPath "DynamicIsland-${{ github.ref_name }}-win-x64.zip"
+          Compress-Archive -Path stage/* -DestinationPath "DynamicIsland-$version-win-x64.zip"
 
       - name: Create GitHub release
         shell: pwsh
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release create "${{ github.ref_name }}" "DynamicIsland-${{ github.ref_name }}-win-x64.zip" --title "${{ github.ref_name }}" --generate-notes
+        run: |
+          $version = "${{ github.ref_name }}".TrimStart('v')
+          gh release create "${{ github.ref_name }}" "DynamicIsland-$version-win-x64.zip" --title "${{ github.ref_name }}" --generate-notes
