@@ -1,0 +1,47 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Publish (self-contained, single-file)
+        run: >
+          dotnet publish src/DynamicIsland/DynamicIsland.csproj
+          -c Release -r win-x64 --self-contained true
+          -p:PublishSingleFile=true
+          -p:IncludeNativeLibrariesForSelfExtract=true
+          -p:EnableCompressionInSingleFile=true
+          -p:DebugType=none
+          -o publish
+
+      - name: Package
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path stage | Out-Null
+          Copy-Item publish/DynamicIsland.exe stage
+          Copy-Item README.md stage
+          Copy-Item LICENSE stage
+          Compress-Archive -Path stage/* -DestinationPath "DynamicIsland-${{ github.ref_name }}-win-x64.zip"
+
+      - name: Create GitHub release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release create "${{ github.ref_name }}" "DynamicIsland-${{ github.ref_name }}-win-x64.zip" --title "${{ github.ref_name }}" --generate-notes
