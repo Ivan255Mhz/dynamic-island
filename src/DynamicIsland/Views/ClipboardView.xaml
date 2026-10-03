@@ -35,13 +35,14 @@
                                 CommandParameter="{Binding}">
                             <Button.Template>
                                 <ControlTemplate TargetType="Button">
-                                    <Border x:Name="Card" CornerRadius="10" Padding="10,7">
+                                    <Border x:Name="Card" CornerRadius="10" Padding="10,7"
+                                            BorderThickness="1" BorderBrush="#12FFFFFF">
                                         <Border.Style>
                                             <Style TargetType="Border">
-                                                <Setter Property="Background" Value="Transparent" />
+                                                <Setter Property="Background" Value="#0DFFFFFF" />
                                                 <Style.Triggers>
                                                     <DataTrigger Binding="{Binding (ItemsControl.AlternationIndex), RelativeSource={RelativeSource AncestorType=ContentPresenter}}" Value="0">
-                                                        <Setter Property="Background" Value="#1CFFFFFF" />
+                                                        <Setter Property="Background" Value="#1AFFFFFF" />
                                                     </DataTrigger>
                                                 </Style.Triggers>
                                             </Style>
