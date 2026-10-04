@@ -3,19 +3,24 @@ using System.Runtime.InteropServices;
 namespace DynamicIsland.Interop;
 
 /// <summary>
-/// Minimal Core Audio interop used to read and toggle the system mute state
-/// for the default playback device.
+/// Minimal Core Audio interop used to read and control the system volume and
+/// mute state for the default playback device. The endpoint is cached so the
+/// volume slider can update it continuously without re-activating COM.
 /// </summary>
 internal static class SystemAudio
 {
+    private static IAudioEndpointVolume? _volume;
+    private static IMMDevice? _device;
+    private static object? _endpointObject;
+
     public static bool IsMuted()
-        => TryGetEndpointVolume(out var volume, out _, out _) && volume.GetMuteState();
+        => TryGetVolumeEndpoint(out var volume) && volume.GetMuteState();
 
     public static bool TryToggleMute(out bool muted)
     {
         muted = false;
 
-        if (!TryGetEndpointVolume(out var volume, out var device, out var obj))
+        if (!TryGetVolumeEndpoint(out var volume))
         {
             return false;
         }
@@ -26,14 +31,104 @@ internal static class SystemAudio
             volume.SetMuteState(muted);
             return true;
         }
-        finally
+        catch
         {
-            Release(obj);
-            Release(device);
+            ResetCache();
+            return false;
         }
     }
 
-    private static bool TryGetEndpointVolume(
+    public static bool TryGetVolume(out float level)
+    {
+        level = 0;
+
+        if (!TryGetVolumeEndpoint(out var volume))
+        {
+            return false;
+        }
+
+        var context = Guid.Empty;
+        try
+        {
+            if (volume.GetMasterVolumeLevelScalar(out level) != 0)
+            {
+                ResetCache();
+                return false;
+            }
+
+            return true;
+        }
+        catch
+        {
+            ResetCache();
+            return false;
+        }
+    }
+
+    public static bool TrySetVolume(float level)
+    {
+        level = Math.Clamp(level, 0f, 1f);
+
+        if (!TryGetVolumeEndpoint(out var volume))
+        {
+            return false;
+        }
+
+        var context = Guid.Empty;
+        try
+        {
+            if (volume.SetMasterVolumeLevelScalar(level, ref context) != 0)
+            {
+                ResetCache();
+                return false;
+            }
+
+            // Moving the slider while muted behaves like the volume keys.
+            if (level > 0f && volume.GetMute(out var muted) == 0 && muted)
+            {
+                volume.SetMute(false, ref context);
+            }
+
+            return true;
+        }
+        catch
+        {
+            ResetCache();
+            return false;
+        }
+    }
+
+    private static bool TryGetVolumeEndpoint(out IAudioEndpointVolume volume)
+    {
+        if (_volume is not null)
+        {
+            volume = _volume;
+            return true;
+        }
+
+        if (!TryActivateEndpoint(out volume, out var device, out var endpointObject))
+        {
+            Release(endpointObject);
+            Release(device);
+            return false;
+        }
+
+        _volume = volume;
+        _device = device;
+        _endpointObject = endpointObject;
+        return true;
+    }
+
+    private static void ResetCache()
+    {
+        Release(_endpointObject);
+        Release(_device);
+        _endpointObject = null;
+        _device = null;
+        _volume = null;
+    }
+
+    private static bool TryActivateEndpoint(
         out IAudioEndpointVolume volume,
         out IMMDevice device,
         out object comObject)
