@@ -36,9 +36,9 @@
                         BorderBrush="#26FFFFFF" BorderThickness="1" />
 
                 <TextBox Grid.Column="1"
+                         Style="{StaticResource FieldTextBox}"
                          Margin="10,0,8,0"
                          VerticalAlignment="Center"
-                         FontSize="15"
                          Text="{Binding HexText, UpdateSourceTrigger=PropertyChanged}">
                     <TextBox.InputBindings>
                         <KeyBinding Key="Enter" Command="{Binding ApplyHexCommand}" />
