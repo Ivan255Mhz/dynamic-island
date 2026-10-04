@@ -30,18 +30,6 @@ public sealed partial class ColorPickerViewModel : ObservableObject
     private string _hexText = string.Empty;
 
     [ObservableProperty]
-    private string _rgbText = string.Empty;
-
-    [ObservableProperty]
-    private string _hslText = string.Empty;
-
-    [ObservableProperty]
-    private string _cssText = string.Empty;
-
-    [ObservableProperty]
-    private string _activeFormat = "HEX";
-
-    [ObservableProperty]
     private bool _isPicking;
 
     [ObservableProperty]
@@ -83,16 +71,7 @@ public sealed partial class ColorPickerViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void CopyHex() => Copy(HexText, "HEX");
-
-    [RelayCommand]
-    private void CopyRgb() => Copy(RgbText, "RGB");
-
-    [RelayCommand]
-    private void CopyHsl() => Copy(HslText, "HSL");
-
-    [RelayCommand]
-    private void CopyCss() => Copy(CssText, "CSS");
+    private void CopyHex() => _clipboard.SetText(HexText);
 
     [RelayCommand]
     private async Task PickAsync()
@@ -137,18 +116,9 @@ public sealed partial class ColorPickerViewModel : ObservableObject
         _syncing = false;
 
         HexText = ColorMath.ToHex(color);
-        RgbText = ColorMath.ToRgbText(color);
-        HslText = ColorMath.ToHslText(color);
-        CssText = ColorMath.ToCssText(color);
         SwatchBrush = new SolidColorBrush(color);
 
         _saveTimer.Stop();
         _saveTimer.Start();
-    }
-
-    private void Copy(string text, string format)
-    {
-        _clipboard.SetText(text);
-        ActiveFormat = format;
     }
 }
