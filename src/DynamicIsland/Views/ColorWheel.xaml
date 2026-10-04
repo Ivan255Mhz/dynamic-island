@@ -6,10 +6,10 @@
              mc:Ignorable="d"
              Width="160" Height="160">
     <Grid x:Name="Root" Background="Transparent">
-        <Image x:Name="RingImage" Stretch="Fill" />
+        <Image x:Name="RingImage" Stretch="Fill" RenderOptions.BitmapScalingMode="HighQuality" />
 
         <Border x:Name="SvBox"
-                Width="84" Height="84"
+                Width="72" Height="72"
                 CornerRadius="8"
                 ClipToBounds="True"
                 HorizontalAlignment="Center"
@@ -34,7 +34,7 @@
                 </Rectangle>
             </Grid>
             <Border.BorderBrush>
-                <SolidColorBrush Color="#33FFFFFF" />
+                <SolidColorBrush Color="#1FFFFFFF" />
             </Border.BorderBrush>
             <Border.BorderThickness>1</Border.BorderThickness>
         </Border>

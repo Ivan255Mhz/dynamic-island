@@ -13,9 +13,9 @@ namespace DynamicIsland.Views;
 public partial class ColorWheel : UserControl
 {
     private const double Size = 160;
-    private const double OuterRadius = 76;
-    private const double InnerRadius = 60;
-    private const double SquareSize = 84;
+    private const double OuterRadius = 78;
+    private const double InnerRadius = 64;
+    private const double SquareSize = 72;
     private const double MarkerRadius = (OuterRadius + InnerRadius) / 2;
 
     private static readonly Lazy<BitmapSource> Ring = new(CreateRing);
@@ -164,10 +164,14 @@ public partial class ColorWheel : UserControl
 
     private static BitmapSource CreateRing()
     {
-        var size = (int)Size;
+        // Supersample 4x and let WPF downscale, giving smooth edges and hues.
+        const int scale = 4;
+        var size = (int)Size * scale;
         var stride = size * 4;
         var pixels = new byte[stride * size];
-        var center = Size / 2;
+        var center = size / 2.0;
+        var outer = OuterRadius * scale;
+        var inner = InnerRadius * scale;
 
         for (var y = 0; y < size; y++)
         {
@@ -177,7 +181,7 @@ public partial class ColorWheel : UserControl
                 var dy = y + 0.5 - center;
                 var distance = Math.Sqrt((dx * dx) + (dy * dy));
 
-                if (distance < InnerRadius || distance > OuterRadius)
+                if (distance < inner || distance > outer)
                 {
                     continue;
                 }

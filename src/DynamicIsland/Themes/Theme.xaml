@@ -106,15 +106,9 @@
         </Setter>
     </Style>
 
-    <!-- Filled input field (same look as the dropdown pills) -->
-    <Style x:Key="FieldTextBox" TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
-        <Setter Property="Background" Value="#1AFFFFFF" />
-        <Setter Property="Padding" Value="10,6" />
-        <Setter Property="FontSize" Value="13" />
-    </Style>
-
     <!-- Format chip for the color picker -->
     <Style x:Key="ChipButton" TargetType="Button" BasedOn="{StaticResource TextButton}">
+        <Setter Property="Background" Value="#12FFFFFF" />
         <Setter Property="Padding" Value="14,5" />
         <Setter Property="FontSize" Value="11" />
         <Setter Property="Margin" Value="0,0,6,0" />
@@ -404,6 +398,14 @@
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
+    </Style>
+
+    <!-- Filled input field (same look as the dropdown pills). Must come after
+         the implicit TextBox style so BasedOn can resolve it. -->
+    <Style x:Key="FieldTextBox" TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+        <Setter Property="Background" Value="#1AFFFFFF" />
+        <Setter Property="Padding" Value="10,6" />
+        <Setter Property="FontSize" Value="13" />
     </Style>
 
 </ResourceDictionary>
