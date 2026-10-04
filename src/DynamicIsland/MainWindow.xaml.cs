@@ -28,8 +28,8 @@ public partial class MainWindow : Window
     private const double ScreenshotsHeight = 136;
     private const double ClipboardHeight = 238;
     private const double TranslatorHeight = 260;
-    private const double ColorPickerWidth = 440;
-    private const double ColorPickerHeight = 224;
+    private const double ColorPickerWidth = 380;
+    private const double ColorPickerHeight = 204;
     private const double ExpandedRadius = 22;
 
     private const double ExpandMs = 460;

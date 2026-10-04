@@ -12,10 +12,10 @@ namespace DynamicIsland.Views;
 /// </summary>
 public partial class ColorWheel : UserControl
 {
-    private const double Size = 144;
-    private const double OuterRadius = 68;
-    private const double InnerRadius = 56;
-    private const double SquareSize = 60;
+    private const double Size = 124;
+    private const double OuterRadius = 58;
+    private const double InnerRadius = 48;
+    private const double SquareSize = 52;
     private const double MarkerRadius = (OuterRadius + InnerRadius) / 2;
 
     private static readonly Lazy<BitmapSource> Ring = new(CreateRing, isThreadSafe: true);

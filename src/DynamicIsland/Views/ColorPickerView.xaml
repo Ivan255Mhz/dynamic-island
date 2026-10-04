@@ -8,7 +8,7 @@
              d:DesignHeight="224" d:DesignWidth="440"
              FontFamily="{StaticResource UiFont}"
              Foreground="{StaticResource TextPrimaryBrush}">
-    <Grid Width="400" HorizontalAlignment="Center">
+    <Grid Width="340" HorizontalAlignment="Center">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="Auto" />
