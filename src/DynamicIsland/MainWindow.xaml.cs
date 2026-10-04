@@ -610,14 +610,15 @@ public partial class MainWindow : Window
     /// <summary>Grows the content from the middle when a section becomes active.</summary>
     private static void AnimateUnfold(ScaleTransform scale)
     {
+        const double from = 0.82;
         var duration = TimeSpan.FromMilliseconds(UnfoldMs);
 
         scale.BeginAnimation(
             ScaleTransform.ScaleXProperty,
-            new DoubleAnimation(0.9, 1, duration) { EasingFunction = UnfoldSpring });
+            new DoubleAnimation(from, 1, duration) { EasingFunction = UnfoldSpring });
         scale.BeginAnimation(
             ScaleTransform.ScaleYProperty,
-            new DoubleAnimation(0.9, 1, duration) { EasingFunction = UnfoldSpring });
+            new DoubleAnimation(from, 1, duration) { EasingFunction = UnfoldSpring });
     }
 
     private void EnterPicking()
