@@ -188,7 +188,7 @@
                             <Grid x:Name="DetailHost">
                                 <views:MusicView x:Name="MusicSection"
                                                  DataContext="{Binding Music}"
-                                                 VerticalAlignment="Top" />
+                                                 VerticalAlignment="Center" />
                                 <views:ClipboardView x:Name="ClipboardSection"
                                                      DataContext="{Binding Clipboard}"
                                                      Visibility="Hidden"

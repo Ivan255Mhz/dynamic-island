@@ -24,7 +24,7 @@ public partial class MainWindow : Window
     private const double CollapsedRadius = 20;
 
     private const double DetailWidth = 380;
-    private const double MusicHeight = 150;
+    private const double MusicHeight = 158;
     private const double ScreenshotsHeight = 136;
     private const double ClipboardHeight = 238;
     private const double TranslatorHeight = 260;
