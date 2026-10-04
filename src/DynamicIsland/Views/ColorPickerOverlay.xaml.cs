@@ -37,6 +37,8 @@ public partial class ColorPickerOverlay : Window
 
     private Point _cursor;
     private bool _closing;
+    private int _updateQueued;
+    private long _lastUpdateTicks;
 
     public ColorPickerOverlay()
     {
@@ -116,23 +118,16 @@ public partial class ColorPickerOverlay : Window
 
         var message = (int)wParam;
         var data = Marshal.PtrToStructure<NativeMethods.MSLLHOOKSTRUCT>(lParam);
-        var point = new Point(data.Point.X, data.Point.Y);
 
         switch (message)
         {
             case NativeMethods.WM_MOUSEMOVE:
-                Dispatcher.BeginInvoke(DispatcherPriority.Input, () =>
-                {
-                    if (_closing)
-                    {
-                        return;
-                    }
-
-                    _cursor = point;
-                    NativeMethods.SetCursor(NativeMethods.LoadCursor(IntPtr.Zero, NativeMethods.IDC_CROSS));
-                    Update();
-                });
-                return new IntPtr(1);
+                // Never swallow moves: the pointer must keep moving. Only the
+                // latest position matters, so queue at most one refresh.
+                _cursor = new Point(data.Point.X, data.Point.Y);
+                NativeMethods.SetCursor(NativeMethods.LoadCursor(IntPtr.Zero, NativeMethods.IDC_CROSS));
+                RequestUpdate();
+                break;
 
             case NativeMethods.WM_LBUTTONDOWN:
                 Dispatcher.BeginInvoke(DispatcherPriority.Input, FinishPick);
@@ -147,6 +142,32 @@ public partial class ColorPickerOverlay : Window
         }
 
         return NativeMethods.CallNextHookEx(_mouseHook, nCode, wParam, lParam);
+    }
+
+    private void RequestUpdate()
+    {
+        var now = Environment.TickCount64;
+        if (now - _lastUpdateTicks < 30)
+        {
+            // The timer will catch up; keeps the hook path cheap so the
+            // pointer stays perfectly smooth while picking.
+            return;
+        }
+
+        if (Interlocked.CompareExchange(ref _updateQueued, 1, 0) != 0)
+        {
+            return;
+        }
+
+        _lastUpdateTicks = now;
+        Dispatcher.BeginInvoke(DispatcherPriority.Input, () =>
+        {
+            _updateQueued = 0;
+            if (!_closing)
+            {
+                Update();
+            }
+        });
     }
 
     private IntPtr OnKeyboardHook(int nCode, IntPtr wParam, IntPtr lParam)
