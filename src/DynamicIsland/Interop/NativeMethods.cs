@@ -92,7 +92,20 @@ internal static class NativeMethods
     internal const int WM_MOUSEWHEEL = 0x020A;
     internal const int WM_KEYDOWN = 0x0100;
     internal const int VK_ESCAPE = 0x1B;
+    internal const int VK_SPACE = 0x20;
     internal static readonly IntPtr IDC_CROSS = new(32515);
+
+    internal const int WM_HOTKEY = 0x0312;
+    internal const uint MOD_ALT = 0x0001;
+    internal const uint MOD_CONTROL = 0x0002;
+    internal const uint MOD_NOREPEAT = 0x4000;
+    internal const uint VK_C = 0x43;
+
+    [DllImport("user32.dll", SetLastError = true)]
+    internal static extern bool RegisterHotKey(IntPtr hWnd, int id, uint modifiers, uint virtualKey);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    internal static extern bool UnregisterHotKey(IntPtr hWnd, int id);
 
     internal delegate IntPtr HookProc(int nCode, IntPtr wParam, IntPtr lParam);
 

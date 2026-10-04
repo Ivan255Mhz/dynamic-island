@@ -59,6 +59,10 @@ public partial class MainWindow : Window
     private TrayIcon? _tray;
     private ContextMenu? _trayMenu;
     private MenuItem? _autostartItem;
+    private bool _hotkeyRegistered;
+    private IntPtr _handle;
+
+    private const int EyedropperHotkeyId = 0x4D49;
 
     public MainWindow(IScreenColorPicker screenPicker)
     {
@@ -263,11 +267,18 @@ public partial class MainWindow : Window
     private void OnSourceInitialized(object? sender, EventArgs e)
     {
         var handle = new WindowInteropHelper(this).Handle;
+        _handle = handle;
         var style = NativeMethods.GetWindowLong(handle, NativeMethods.GWL_EXSTYLE);
         style |= NativeMethods.WS_EX_TOOLWINDOW;
         NativeMethods.SetWindowLong(handle, NativeMethods.GWL_EXSTYLE, style);
 
         HwndSource.FromHwnd(handle)?.AddHook(WndProc);
+
+        _hotkeyRegistered = NativeMethods.RegisterHotKey(
+            handle,
+            EyedropperHotkeyId,
+            NativeMethods.MOD_CONTROL | NativeMethods.MOD_ALT | NativeMethods.MOD_NOREPEAT,
+            NativeMethods.VK_C);
 
         _tray = new TrayIcon(handle, "Dynamic Island");
         _tray.Activated += (_, _) =>
@@ -282,6 +293,12 @@ public partial class MainWindow : Window
 
         Closed += (_, _) =>
         {
+            if (_hotkeyRegistered)
+            {
+                _hotkeyRegistered = false;
+                NativeMethods.UnregisterHotKey(_handle, EyedropperHotkeyId);
+            }
+
             _tray?.Dispose();
             _tray = null;
         };
@@ -317,6 +334,13 @@ public partial class MainWindow : Window
             return new IntPtr(NativeMethods.MA_NOACTIVATE);
         }
 
+        if (msg == NativeMethods.WM_HOTKEY && wParam.ToInt32() == EyedropperHotkeyId)
+        {
+            handled = true;
+            StartEyedropperFromHotkey();
+            return IntPtr.Zero;
+        }
+
         if (msg == TrayIcon.CallbackMessage)
         {
             handled = _tray?.HandleMessage(lParam) ?? false;
@@ -324,6 +348,14 @@ public partial class MainWindow : Window
         }
 
         return IntPtr.Zero;
+    }
+
+    private void StartEyedropperFromHotkey()
+    {
+        if (_viewModel?.ColorPicker is { IsPicking: false } picker)
+        {
+            picker.PickCommand.Execute(null);
+        }
     }
 
     private void ShowTrayMenu()

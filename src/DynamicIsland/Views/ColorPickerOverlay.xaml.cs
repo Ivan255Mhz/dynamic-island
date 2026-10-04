@@ -16,12 +16,15 @@ namespace DynamicIsland.Views;
 /// </summary>
 public partial class ColorPickerOverlay : Window
 {
-    private const int Cells = 13;
-    private const int Radius = 6;
+    private const int DefaultCells = 13;
+    private const int MinCells = 5;
+    private const int MaxCells = 25;
+    private const int ZoomStep = 2;
     private const int RefreshMs = 50;
     private const double Gap = 18;
 
-    private readonly byte[] _magnifierBuffer = new byte[Cells * Cells * 4];
+    private static readonly Brush FrozenMarkerBrush = CreateFrozenBrush();
+
     private readonly DispatcherTimer _refreshTimer;
 
     private NativeMethods.HookProc? _mouseCallback;
@@ -34,9 +37,15 @@ public partial class ColorPickerOverlay : Window
     private IntPtr _captureBits;
     private IntPtr _previousBitmap;
     private bool _captureReady;
+    private int _captureCells;
+
+    private int _cells = DefaultCells;
+    private int _radius = DefaultCells / 2;
+    private byte[] _magnifierBuffer = new byte[DefaultCells * DefaultCells * 4];
 
     private Point _cursor;
     private bool _closing;
+    private bool _frozen;
     private int _updateQueued;
     private long _lastUpdateTicks;
 
@@ -56,6 +65,13 @@ public partial class ColorPickerOverlay : Window
 
     public Color? PickedColor { get; private set; }
 
+    private static Brush CreateFrozenBrush()
+    {
+        var brush = new SolidColorBrush(Color.FromRgb(0xFF, 0xC8, 0x57));
+        brush.Freeze();
+        return brush;
+    }
+
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
         InstallHooks();
@@ -71,6 +87,7 @@ public partial class ColorPickerOverlay : Window
                 SystemParameters.VirtualScreenTop + (SystemParameters.VirtualScreenHeight / 2));
         }
 
+        UpdateZoomBadge();
         Update();
         _refreshTimer.Start();
     }
@@ -130,6 +147,9 @@ public partial class ColorPickerOverlay : Window
                 break;
 
             case NativeMethods.WM_LBUTTONDOWN:
+                // Trust the click position itself so a missed move event can
+                // never make the pick sample a stale spot.
+                _cursor = new Point(data.Point.X, data.Point.Y);
                 Dispatcher.BeginInvoke(DispatcherPriority.Input, FinishPick);
                 return new IntPtr(1);
 
@@ -138,11 +158,51 @@ public partial class ColorPickerOverlay : Window
                 return new IntPtr(1);
 
             case NativeMethods.WM_MOUSEWHEEL:
+                HandleWheel(data.MouseData);
                 return new IntPtr(1);
         }
 
         return NativeMethods.CallNextHookEx(_mouseHook, nCode, wParam, lParam);
     }
+
+    private void HandleWheel(uint mouseData)
+    {
+        var delta = (short)((mouseData >> 16) & 0xFFFF);
+        if (delta == 0 || _closing)
+        {
+            return;
+        }
+
+        var next = delta > 0 ? _cells - ZoomStep : _cells + ZoomStep;
+        next = Math.Clamp(next, MinCells, MaxCells);
+        if ((next & 1) == 0)
+        {
+            next++;
+        }
+
+        if (next == _cells)
+        {
+            return;
+        }
+
+        _cells = next;
+        _radius = _cells / 2;
+        _magnifierBuffer = new byte[_cells * _cells * 4];
+
+        Dispatcher.BeginInvoke(DispatcherPriority.Input, () =>
+        {
+            if (_closing)
+            {
+                return;
+            }
+
+            UpdateZoomBadge();
+            Update();
+        });
+    }
+
+    private void UpdateZoomBadge()
+        => ZoomBadge.Text = _frozen ? $"{_cells} ❄" : _cells.ToString();
 
     private void RequestUpdate()
     {
@@ -185,9 +245,32 @@ public partial class ColorPickerOverlay : Window
                 Dispatcher.BeginInvoke(DispatcherPriority.Input, Cancel);
                 return new IntPtr(1);
             }
+
+            if (data.VkCode == NativeMethods.VK_SPACE)
+            {
+                Dispatcher.BeginInvoke(DispatcherPriority.Input, ToggleFreeze);
+                return new IntPtr(1);
+            }
         }
 
         return NativeMethods.CallNextHookEx(_keyboardHook, nCode, wParam, lParam);
+    }
+
+    private void ToggleFreeze()
+    {
+        if (_closing)
+        {
+            return;
+        }
+
+        _frozen = !_frozen;
+        MagnifierCenter.Stroke = _frozen ? FrozenMarkerBrush : Brushes.White;
+        UpdateZoomBadge();
+
+        if (!_frozen)
+        {
+            Update();
+        }
     }
 
     private void FinishPick()
@@ -214,6 +297,11 @@ public partial class ColorPickerOverlay : Window
 
     private void Update()
     {
+        if (_frozen)
+        {
+            return;
+        }
+
         var color = UpdateMagnifier((int)_cursor.X, (int)_cursor.Y);
         if (color is { } c)
         {
@@ -256,10 +344,10 @@ public partial class ColorPickerOverlay : Window
 
         var right = (int)Math.Max(1, SystemParameters.VirtualScreenWidth);
         var bottom = (int)Math.Max(1, SystemParameters.VirtualScreenHeight);
-        var sourceLeft = Math.Max(0, screenX - Radius);
-        var sourceTop = Math.Max(0, screenY - Radius);
-        var sourceRight = Math.Min(right, screenX + Radius + 1);
-        var sourceBottom = Math.Min(bottom, screenY + Radius + 1);
+        var sourceLeft = Math.Max(0, screenX - _radius);
+        var sourceTop = Math.Max(0, screenY - _radius);
+        var sourceRight = Math.Min(right, screenX + _radius + 1);
+        var sourceBottom = Math.Min(bottom, screenY + _radius + 1);
 
         if (sourceRight > sourceLeft && sourceBottom > sourceTop)
         {
@@ -270,8 +358,8 @@ public partial class ColorPickerOverlay : Window
                 {
                     NativeMethods.BitBlt(
                         _captureDc,
-                        sourceLeft - (screenX - Radius),
-                        sourceTop - (screenY - Radius),
+                        sourceLeft - (screenX - _radius),
+                        sourceTop - (screenY - _radius),
                         sourceRight - sourceLeft,
                         sourceBottom - sourceTop,
                         screenDc,
@@ -294,14 +382,14 @@ public partial class ColorPickerOverlay : Window
         }
 
         var frame = BitmapSource.Create(
-            Cells,
-            Cells,
+            _cells,
+            _cells,
             96,
             96,
             PixelFormats.Bgra32,
             null,
             _magnifierBuffer,
-            Cells * 4);
+            _cells * 4);
         frame.Freeze();
         MagnifierImage.Source = frame;
 
@@ -311,7 +399,7 @@ public partial class ColorPickerOverlay : Window
         }
 
         // The cursor always maps to the centre cell of the grid.
-        var centerIndex = ((Radius * Cells) + Radius) * 4;
+        var centerIndex = ((_radius * _cells) + _radius) * 4;
         return Color.FromRgb(
             _magnifierBuffer[centerIndex + 2],
             _magnifierBuffer[centerIndex + 1],
@@ -320,10 +408,12 @@ public partial class ColorPickerOverlay : Window
 
     private bool EnsureCaptureSurface()
     {
-        if (_captureReady)
+        if (_captureReady && _captureCells == _cells)
         {
             return true;
         }
+
+        ReleaseCaptureSurface();
 
         var screenDc = NativeMethods.GetDC(IntPtr.Zero);
         if (screenDc == IntPtr.Zero)
@@ -342,8 +432,8 @@ public partial class ColorPickerOverlay : Window
             var info = new NativeMethods.BITMAPINFOHEADER
             {
                 biSize = Marshal.SizeOf<NativeMethods.BITMAPINFOHEADER>(),
-                biWidth = Cells,
-                biHeight = -Cells,
+                biWidth = _cells,
+                biHeight = -_cells,
                 biPlanes = 1,
                 biBitCount = 32,
                 biCompression = 0,
@@ -364,6 +454,7 @@ public partial class ColorPickerOverlay : Window
 
             _previousBitmap = NativeMethods.SelectObject(_captureDc, _captureBitmap);
             _captureReady = true;
+            _captureCells = _cells;
             return true;
         }
         finally
@@ -394,5 +485,6 @@ public partial class ColorPickerOverlay : Window
 
         _captureBits = IntPtr.Zero;
         _captureReady = false;
+        _captureCells = 0;
     }
 }
