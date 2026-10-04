@@ -34,11 +34,11 @@ public partial class MainWindow : Window
 
     private const double ExpandMs = 460;
     private const double CollapseMs = 320;
-    private const double MorphMs = 440;
+    private const double MorphMs = 360;
     private const double ContentFadeMs = 260;
 
     private static readonly SpringEase ExpandSpring = new() { Damping = 1.0, Frequency = 10.5 };
-    private static readonly SpringEase MorphSpring = new() { Damping = 1.0, Frequency = 11.5 };
+    private static readonly SpringEase MorphSpring = new() { Damping = 1.0, Frequency = 12.5 };
     private static readonly CubicEase EaseOut = new() { EasingMode = EasingMode.EaseOut };
     private static readonly CubicEase CollapseEase = new() { EasingMode = EasingMode.EaseInOut };
     private static readonly QuadraticEase EaseIn = new() { EasingMode = EasingMode.EaseIn };
@@ -70,6 +70,8 @@ public partial class MainWindow : Window
         _screenPicker = screenPicker;
         _screenPicker.PickStarted += (_, _) => EnterPicking();
         _screenPicker.PickFinished += (_, _) => ExitPicking();
+
+        _ = Task.Run(Views.ColorWheel.Prewarm);
 
         _settings = SettingsStore.Current;
         _dock = _settings.Dock;
@@ -168,6 +170,7 @@ public partial class MainWindow : Window
                 IslandSection.Clipboard,
                 IslandSection.Translator,
                 IslandSection.Screenshots,
+                IslandSection.ColorPicker,
             };
             var index = 0;
 
@@ -541,7 +544,7 @@ public partial class MainWindow : Window
     private void SwitchSection(IslandSection section, bool animated)
     {
         var target = SectionElement(section);
-        var duration = animated ? 180.0 : 0.0;
+        var duration = animated ? 140.0 : 0.0;
 
         foreach (var element in new FrameworkElement[] { MusicSection, ClipboardSection, ScreenshotsSection, TranslatorSection, ColorPickerSection })
         {

@@ -18,9 +18,12 @@ public partial class ColorWheel : UserControl
     private const double SquareSize = 60;
     private const double MarkerRadius = (OuterRadius + InnerRadius) / 2;
 
-    private static readonly Lazy<BitmapSource> Ring = new(CreateRing);
+    private static readonly Lazy<BitmapSource> Ring = new(CreateRing, isThreadSafe: true);
 
     private DragMode _mode;
+
+    /// <summary>Builds the ring bitmap ahead of time so the first show is smooth.</summary>
+    public static void Prewarm() => _ = Ring.Value;
 
     public ColorWheel()
     {
@@ -164,18 +167,19 @@ public partial class ColorWheel : UserControl
 
     private static BitmapSource CreateRing()
     {
-        // Supersample 4x and let WPF downscale, giving smooth edges and hues.
+        // Supersample 4x and downsample in code so the image is rendered 1:1
+        // (no per-frame filtering) yet keeps smooth, anti-aliased edges.
         const int scale = 4;
-        var size = (int)Size * scale;
-        var stride = size * 4;
-        var pixels = new byte[stride * size];
-        var center = size / 2.0;
+        var src = (int)Size * scale;
+        var srcStride = src * 4;
+        var source = new byte[srcStride * src];
+        var center = src / 2.0;
         var outer = OuterRadius * scale;
         var inner = InnerRadius * scale;
 
-        for (var y = 0; y < size; y++)
+        for (var y = 0; y < src; y++)
         {
-            for (var x = 0; x < size; x++)
+            for (var x = 0; x < src; x++)
             {
                 var dx = x + 0.5 - center;
                 var dy = y + 0.5 - center;
@@ -188,11 +192,47 @@ public partial class ColorWheel : UserControl
 
                 var hue = ((Math.Atan2(dy, dx) * 180 / Math.PI) + 360) % 360;
                 var color = ColorMath.FromHsv(hue, 1, 1);
-                var index = (y * stride) + (x * 4);
-                pixels[index] = color.B;
-                pixels[index + 1] = color.G;
-                pixels[index + 2] = color.R;
-                pixels[index + 3] = 255;
+                var index = (y * srcStride) + (x * 4);
+                source[index] = color.B;
+                source[index + 1] = color.G;
+                source[index + 2] = color.R;
+                source[index + 3] = 255;
+            }
+        }
+
+        var size = (int)Size;
+        var stride = size * 4;
+        var pixels = new byte[stride * size];
+        var samples = scale * scale;
+
+        for (var y = 0; y < size; y++)
+        {
+            for (var x = 0; x < size; x++)
+            {
+                int r = 0, g = 0, b = 0, a = 0;
+
+                for (var sy = 0; sy < scale; sy++)
+                {
+                    var row = ((y * scale) + sy) * srcStride;
+                    for (var sx = 0; sx < scale; sx++)
+                    {
+                        var i = row + (((x * scale) + sx) * 4);
+                        var alpha = source[i + 3];
+                        b += source[i] * alpha;
+                        g += source[i + 1] * alpha;
+                        r += source[i + 2] * alpha;
+                        a += alpha;
+                    }
+                }
+
+                var o = (y * stride) + (x * 4);
+                if (a > 0)
+                {
+                    pixels[o] = (byte)(b / a);
+                    pixels[o + 1] = (byte)(g / a);
+                    pixels[o + 2] = (byte)(r / a);
+                    pixels[o + 3] = (byte)(a / samples);
+                }
             }
         }
 

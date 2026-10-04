@@ -6,7 +6,7 @@
              mc:Ignorable="d"
              Width="144" Height="144">
     <Grid x:Name="Root" Background="Transparent">
-        <Image x:Name="RingImage" Stretch="Fill" RenderOptions.BitmapScalingMode="HighQuality" />
+        <Image x:Name="RingImage" Stretch="Fill" />
 
         <Border x:Name="SvBox"
                 Width="60" Height="60"
