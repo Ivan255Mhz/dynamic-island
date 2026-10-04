@@ -16,9 +16,6 @@
         <Image x:Name="ScreenImage" Stretch="Fill" RenderOptions.BitmapScalingMode="NearestNeighbor" />
 
         <Canvas x:Name="Layer">
-            <Line x:Name="HLine" Stroke="#88FFFFFF" StrokeThickness="1" />
-            <Line x:Name="VLine" Stroke="#88FFFFFF" StrokeThickness="1" />
-
             <Border x:Name="Magnifier"
                     Width="156" Height="156"
                     CornerRadius="10"
@@ -41,12 +38,26 @@
                     Padding="12,8"
                     BorderBrush="#22FFFFFF"
                     BorderThickness="1">
-                <StackPanel>
-                    <TextBlock x:Name="HexLabel" Foreground="#FFF3F3F5" FontSize="14" FontWeight="SemiBold" />
-                    <TextBlock x:Name="RgbLabel" Foreground="#99FFFFFF" FontSize="11" Margin="0,2,0,0" />
-                    <TextBlock Text="ЛКМ — выбрать · Esc — отмена"
-                               Foreground="#66FFFFFF" FontSize="10" Margin="0,6,0,0" />
-                </StackPanel>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <Border x:Name="Preview"
+                            Width="34" Height="34"
+                            CornerRadius="8"
+                            Margin="0,0,10,0"
+                            BorderBrush="#33FFFFFF"
+                            BorderThickness="1" />
+
+                    <StackPanel Grid.Column="1">
+                        <TextBlock x:Name="HexLabel" Foreground="#FFF3F3F5" FontSize="14" FontWeight="SemiBold" />
+                        <TextBlock x:Name="RgbLabel" Foreground="#99FFFFFF" FontSize="11" Margin="0,2,0,0" />
+                        <TextBlock Text="ЛКМ — выбрать · Esc — отмена"
+                                   Foreground="#66FFFFFF" FontSize="10" Margin="0,6,0,0" />
+                    </StackPanel>
+                </Grid>
             </Border>
         </Canvas>
     </Grid>

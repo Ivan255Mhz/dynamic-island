@@ -91,13 +91,6 @@ public partial class ColorPickerOverlay : Window
     {
         var (imageX, imageY) = ToImage(cursor);
 
-        HLine.X1 = 0;
-        HLine.X2 = ActualWidth;
-        HLine.Y1 = HLine.Y2 = cursor.Y;
-        VLine.Y1 = 0;
-        VLine.Y2 = ActualHeight;
-        VLine.X1 = VLine.X2 = cursor.X;
-
         if (imageX != _lastImageX || imageY != _lastImageY)
         {
             _lastImageX = imageX;
@@ -107,6 +100,7 @@ public partial class ColorPickerOverlay : Window
             var color = _pixels.GetPixel(imageX, imageY);
             HexLabel.Text = ColorMath.ToHex(color);
             RgbLabel.Text = $"RGB {ColorMath.ToRgbText(color)}";
+            Preview.Background = new SolidColorBrush(color);
         }
 
         PositionPanels(cursor);
