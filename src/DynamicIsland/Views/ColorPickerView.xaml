@@ -8,7 +8,7 @@
              d:DesignHeight="224" d:DesignWidth="440"
              FontFamily="{StaticResource UiFont}"
              Foreground="{StaticResource TextPrimaryBrush}">
-    <Grid Width="340" HorizontalAlignment="Center">
+    <Grid MaxWidth="340" HorizontalAlignment="Center">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="Auto" />
@@ -23,14 +23,18 @@
             <!-- Swatch centred against the whole field + button block -->
             <Grid Grid.Column="0"
                   Width="52" Height="52"
-                  VerticalAlignment="Center">
+                  VerticalAlignment="Center"
+                  UseLayoutRounding="True">
                 <Border CornerRadius="14"
-                        Background="{Binding SwatchBrush}" />
+                        Background="{Binding SwatchBrush}"
+                        SnapsToDevicePixels="True" />
                 <Border CornerRadius="14"
-                        BorderBrush="#33FFFFFF" BorderThickness="1" />
+                        BorderBrush="#33FFFFFF" BorderThickness="1"
+                        SnapsToDevicePixels="True" />
                 <Border CornerRadius="13"
                         Margin="1"
-                        BorderBrush="#26000000" BorderThickness="1" />
+                        BorderBrush="#26000000" BorderThickness="1"
+                        SnapsToDevicePixels="True" />
             </Grid>
 
             <Grid Grid.Column="1" Margin="14,0,0,0">
