@@ -1,11 +1,10 @@
 using System.Windows.Media;
-using DynamicIsland.Infrastructure;
 
 namespace DynamicIsland.Services;
 
 /// <summary>
-/// Captures the screen and shows an overlay with a magnifier so the user can
-/// pick any pixel color.
+/// Shows a live overlay with a magnifier so the user can pick any pixel color.
+/// Pixel data is read straight from the screen while the overlay is open.
 /// </summary>
 public sealed class ScreenColorPickerService : IScreenColorPicker
 {
@@ -19,11 +18,10 @@ public sealed class ScreenColorPickerService : IScreenColorPicker
 
         try
         {
-            // Give the island a moment to hide so it is not part of the frame.
+            // Give the island a moment to hide so it does not sit under the cursor.
             await Task.Delay(150, cancellationToken).ConfigureAwait(true);
 
-            using var pixels = ScreenPixels.CaptureVirtualScreen();
-            var overlay = new Views.ColorPickerOverlay(pixels);
+            var overlay = new Views.ColorPickerOverlay();
             overlay.ShowDialog();
             return overlay.PickedColor;
         }
