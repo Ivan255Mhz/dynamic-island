@@ -16,6 +16,26 @@
         <Image x:Name="ScreenImage" Stretch="Fill" RenderOptions.BitmapScalingMode="NearestNeighbor" />
 
         <Canvas x:Name="Layer">
+            <!-- Zoomed pixels around the cursor (Figma-like) -->
+            <Border x:Name="Magnifier"
+                    Width="130" Height="130"
+                    CornerRadius="10"
+                    Background="#FF000000"
+                    BorderBrush="#33FFFFFF"
+                    BorderThickness="1"
+                    ClipToBounds="True">
+                <Grid>
+                    <Image x:Name="MagnifierImage"
+                           Stretch="Fill"
+                           RenderOptions.BitmapScalingMode="NearestNeighbor" />
+                    <Rectangle x:Name="MagnifierCenter"
+                               Width="10" Height="10"
+                               Stroke="White" StrokeThickness="1.5"
+                               HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Grid>
+            </Border>
+
+            <!-- Swatch + hex -->
             <Border x:Name="Info"
                     Background="#CC101012"
                     CornerRadius="10"

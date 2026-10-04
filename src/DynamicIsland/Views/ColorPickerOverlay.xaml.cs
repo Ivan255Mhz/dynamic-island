@@ -2,17 +2,23 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using DynamicIsland.Infrastructure;
 
 namespace DynamicIsland.Views;
 
 /// <summary>
-/// Full-screen eyedropper: shows the captured frame with a small floating
-/// swatch + hex label, and returns the pixel under the cursor on click.
+/// Full-screen eyedropper: shows a Figma-like zoom grid above a swatch + hex
+/// label and returns the pixel under the cursor on click.
 /// </summary>
 public partial class ColorPickerOverlay : Window
 {
+    private const int Cells = 13;
+    private const int Radius = 6;
+
     private readonly ScreenPixels _pixels;
+    private readonly WriteableBitmap _magnifier;
+    private readonly byte[] _magnifierBuffer = new byte[Cells * Cells * 4];
 
     private int _lastImageX = -1;
     private int _lastImageY = -1;
@@ -29,6 +35,9 @@ public partial class ColorPickerOverlay : Window
         Height = pixels.Height;
 
         ScreenImage.Source = pixels.CreateBitmapSource();
+
+        _magnifier = new WriteableBitmap(Cells, Cells, 96, 96, PixelFormats.Bgra32, null);
+        MagnifierImage.Source = _magnifier;
 
         Loaded += OnLoaded;
         MouseMove += OnMouseMove;
@@ -80,12 +89,14 @@ public partial class ColorPickerOverlay : Window
             _lastImageX = imageX;
             _lastImageY = imageY;
 
+            UpdateMagnifier(imageX, imageY);
+
             var color = _pixels.GetPixel(imageX, imageY);
             HexLabel.Text = ColorMath.ToHex(color);
             Preview.Background = new SolidColorBrush(color);
         }
 
-        PositionPanel(cursor);
+        PositionPanels(cursor);
     }
 
     private (int X, int Y) ToImage(Point cursor)
@@ -96,11 +107,40 @@ public partial class ColorPickerOverlay : Window
         return ((int)Math.Round(cursor.X * scaleX), (int)Math.Round(cursor.Y * scaleY));
     }
 
-    private void PositionPanel(Point cursor)
+    private void UpdateMagnifier(int imageX, int imageY)
     {
-        var width = Info.ActualWidth > 0 ? Info.ActualWidth : 130;
-        var height = Info.ActualHeight > 0 ? Info.ActualHeight : 52;
-        const double gap = 20;
+        for (var dy = -Radius; dy <= Radius; dy++)
+        {
+            for (var dx = -Radius; dx <= Radius; dx++)
+            {
+                var color = _pixels.GetPixel(imageX + dx, imageY + dy);
+                var index = (((dy + Radius) * Cells) + (dx + Radius)) * 4;
+                _magnifierBuffer[index] = color.B;
+                _magnifierBuffer[index + 1] = color.G;
+                _magnifierBuffer[index + 2] = color.R;
+                _magnifierBuffer[index + 3] = 255;
+            }
+        }
+
+        _magnifier.WritePixels(
+            new Int32Rect(0, 0, Cells, Cells),
+            _magnifierBuffer,
+            Cells * 4,
+            0);
+    }
+
+    private void PositionPanels(Point cursor)
+    {
+        const double gap = 18;
+        const double spacing = 8;
+
+        var magWidth = Magnifier.Width;
+        var magHeight = Magnifier.Height;
+        var infoWidth = Info.ActualWidth > 0 ? Info.ActualWidth : magWidth;
+        var infoHeight = Info.ActualHeight > 0 ? Info.ActualHeight : 52;
+
+        var width = Math.Max(magWidth, infoWidth);
+        var height = magHeight + spacing + infoHeight;
 
         var left = cursor.X + gap;
         var top = cursor.Y + gap;
@@ -115,7 +155,12 @@ public partial class ColorPickerOverlay : Window
             top = cursor.Y - height - gap;
         }
 
-        Canvas.SetLeft(Info, Math.Max(0, left));
-        Canvas.SetTop(Info, Math.Max(0, top));
+        left = Math.Max(0, left);
+        top = Math.Max(0, top);
+
+        Canvas.SetLeft(Magnifier, left);
+        Canvas.SetTop(Magnifier, top);
+        Canvas.SetLeft(Info, left + ((magWidth - infoWidth) / 2));
+        Canvas.SetTop(Info, top + magHeight + spacing);
     }
 }
