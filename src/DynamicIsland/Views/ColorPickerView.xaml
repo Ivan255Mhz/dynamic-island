@@ -49,7 +49,7 @@
 
             <!-- Eyedropper -->
             <Button Style="{StaticResource TextButton}"
-                    HorizontalAlignment="Stretch"
+                    HorizontalAlignment="Left"
                     HorizontalContentAlignment="Left"
                     Padding="10,6"
                     Margin="0,12,0,0"
