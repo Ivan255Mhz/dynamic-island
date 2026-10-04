@@ -52,29 +52,33 @@
                     Width="210" Height="40"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center">
-                <!-- Collapsed: icon rail -->
+                <!-- Collapsed: icon rail (same geometry & highlight as the expanded rail) -->
                 <StackPanel x:Name="RailCollapsed"
                             Orientation="Horizontal"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
                             Visibility="{Binding ShowRail, Converter={StaticResource BoolToVisibility}}">
-                    <Button Style="{StaticResource IconButton}" Width="30" Height="30" ToolTip="Музыка"
+                    <Button Style="{StaticResource IconButton}" Width="32" Height="30" ToolTip="Музыка"
                             Command="{Binding OpenSectionCommand}" CommandParameter="Music">
-                        <Path Data="{StaticResource IconMusic}" Style="{StaticResource Icon}" Width="17" Height="17" />
+                        <Path Data="{StaticResource IconMusic}" Style="{StaticResource Icon}" Width="17" Height="17"
+                              Opacity="{Binding DataContext.SelectedSection, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource EqualsToOpacity}, ConverterParameter=Music}" />
                     </Button>
-                    <Button Style="{StaticResource IconButton}" Width="30" Height="30" Margin="4,0,0,0" ToolTip="Буфер обмена"
+                    <Button Style="{StaticResource IconButton}" Width="32" Height="30" Margin="4,0,0,0" ToolTip="Буфер обмена"
                             Command="{Binding OpenSectionCommand}" CommandParameter="Clipboard">
-                        <Path Data="{StaticResource IconClipboard}" Style="{StaticResource Icon}" Width="17" Height="17" />
+                        <Path Data="{StaticResource IconClipboard}" Style="{StaticResource Icon}" Width="17" Height="17"
+                              Opacity="{Binding DataContext.SelectedSection, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource EqualsToOpacity}, ConverterParameter=Clipboard}" />
                     </Button>
-                    <Button Style="{StaticResource IconButton}" Width="30" Height="30" Margin="4,0,0,0" ToolTip="Скриншоты"
+                    <Button Style="{StaticResource IconButton}" Width="32" Height="30" Margin="4,0,0,0" ToolTip="Скриншоты"
                             Command="{Binding OpenSectionCommand}" CommandParameter="Screenshots">
-                        <Path Data="{StaticResource IconScreenshots}" Style="{StaticResource Icon}" Width="17" Height="17" />
+                        <Path Data="{StaticResource IconScreenshots}" Style="{StaticResource Icon}" Width="17" Height="17"
+                              Opacity="{Binding DataContext.SelectedSection, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource EqualsToOpacity}, ConverterParameter=Screenshots}" />
                     </Button>
-                    <Button Style="{StaticResource IconButton}" Width="30" Height="30" Margin="4,0,0,0" ToolTip="Переводчик"
+                    <Button Style="{StaticResource IconButton}" Width="32" Height="30" Margin="4,0,0,0" ToolTip="Переводчик"
                             Command="{Binding OpenSectionCommand}" CommandParameter="Translator">
-                        <TextBlock Text="文A" FontSize="12" />
+                        <TextBlock Text="文A" FontSize="12"
+                                   Opacity="{Binding DataContext.SelectedSection, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource EqualsToOpacity}, ConverterParameter=Translator}" />
                     </Button>
-                    <Button Style="{StaticResource IconButton}" Width="30" Height="30" Margin="6,0,0,0" ToolTip="Развернуть"
+                    <Button Style="{StaticResource IconButton}" Width="32" Height="30" Margin="8,0,0,0" ToolTip="Развернуть"
                             Click="OnExpandClick">
                         <Path Data="{StaticResource IconChevronDown}" Style="{StaticResource Icon}" Width="12" Height="12"
                               Stroke="{StaticResource TextSecondaryBrush}" />
@@ -139,7 +143,7 @@
                     </Grid.RowDefinitions>
 
                     <!-- Section rail -->
-                    <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,6">
+                    <StackPanel x:Name="SectionRail" Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,6">
                         <Button Style="{StaticResource IconButton}" Width="32" Height="30" ToolTip="Музыка"
                                 Command="{Binding OpenSectionCommand}" CommandParameter="Music">
                             <Path Data="{StaticResource IconMusic}" Style="{StaticResource Icon}" Width="17" Height="17"

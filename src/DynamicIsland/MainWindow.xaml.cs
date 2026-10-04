@@ -419,17 +419,25 @@ public partial class MainWindow : Window
 
     private void ApplyDock()
     {
-        switch (_dock)
-        {
-            case IslandDock.Bottom:
-                Island.HorizontalAlignment = HorizontalAlignment.Center;
-                Island.VerticalAlignment = VerticalAlignment.Bottom;
-                break;
-            default:
-                Island.HorizontalAlignment = HorizontalAlignment.Center;
-                Island.VerticalAlignment = VerticalAlignment.Top;
-                break;
-        }
+        var bottom = _dock == IslandDock.Bottom;
+
+        // Keep the rail glued to the docked screen edge: at the bottom for the
+        // bottom dock, at the top otherwise. This avoids the rail jumping over
+        // the panel when the island expands.
+        Grid.SetRow(SectionRail, bottom ? 1 : 0);
+        Grid.SetRow(ContentSurface, bottom ? 0 : 1);
+        ExpandedContent.RowDefinitions[0].Height = bottom
+            ? new GridLength(1, GridUnitType.Star)
+            : GridLength.Auto;
+        ExpandedContent.RowDefinitions[1].Height = bottom
+            ? GridLength.Auto
+            : new GridLength(1, GridUnitType.Star);
+        SectionRail.Margin = bottom
+            ? new Thickness(0, 6, 0, 0)
+            : new Thickness(0, 0, 0, 6);
+
+        Island.HorizontalAlignment = HorizontalAlignment.Center;
+        Island.VerticalAlignment = bottom ? VerticalAlignment.Bottom : VerticalAlignment.Top;
 
         BorderEx.Apply(Island, _isExpanded ? ExpandedRadius : CollapsedRadius);
         PositionWindow();
@@ -665,7 +673,6 @@ public partial class MainWindow : Window
         ExpandedContent.Height = CollapsedHeight - 12;
         AnimateIsland(width, height, ExpandedRadius, ExpandSpring, ExpandMs);
         AnimateContentHeight(height, ExpandSpring, ExpandMs);
-        Fade(ContentSurface, 0.45, 1, 220, EaseOut, beginMs: 40);
 
         Fade(CollapsedContent, 1, 0, 150, EaseIn, completed: () =>
         {
