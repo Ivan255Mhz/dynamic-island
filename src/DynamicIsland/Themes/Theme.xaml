@@ -214,7 +214,8 @@
                                             </Grid.ColumnDefinitions>
                                             <ContentPresenter VerticalAlignment="Center"
                                                               Content="{Binding SelectionBoxItem, RelativeSource={RelativeSource AncestorType=ComboBox}}"
-                                                              ContentTemplate="{Binding SelectionBoxItemTemplate, RelativeSource={RelativeSource AncestorType=ComboBox}}" />
+                                                              ContentTemplate="{Binding SelectionBoxItemTemplate, RelativeSource={RelativeSource AncestorType=ComboBox}}"
+                                                              TextElement.Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ComboBox}}" />
                                             <Path Grid.Column="1"
                                                   Data="{StaticResource IconChevronDown}"
                                                   Stroke="{StaticResource TextSecondaryBrush}"
