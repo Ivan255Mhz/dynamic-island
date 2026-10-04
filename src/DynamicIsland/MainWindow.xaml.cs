@@ -40,13 +40,14 @@ public partial class MainWindow : Window
     private static readonly CubicEase CollapseEase = new() { EasingMode = EasingMode.EaseInOut };
     private static readonly QuadraticEase EaseIn = new() { EasingMode = EasingMode.EaseIn };
 
-    private readonly DispatcherTimer _collapseTimer;
+    private readonly DispatcherTimer _hoverTimer;
     private readonly AppSettings _settings;
     private readonly Dictionary<IslandDock, MenuItem> _dockItems = new();
 
     private MainViewModel? _viewModel;
     private bool _isExpanded;
     private bool _isPinned;
+    private int _outsideHoverTicks;
     private IslandDock _dock;
     private TrayIcon? _tray;
     private ContextMenu? _trayMenu;
@@ -66,8 +67,8 @@ public partial class MainWindow : Window
         _dock = _settings.Dock;
         BorderEx.Dock = _dock;
 
-        _collapseTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(280) };
-        _collapseTimer.Tick += OnCollapseTimerTick;
+        _hoverTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(150) };
+        _hoverTimer.Tick += OnHoverTimerTick;
 
         Loaded += OnLoaded;
         SourceInitialized += OnSourceInitialized;
@@ -571,28 +572,53 @@ public partial class MainWindow : Window
 
     private void OnIslandMouseEnter(object sender, MouseEventArgs e)
     {
-        _collapseTimer.Stop();
         Expand();
     }
 
     private void OnIslandMouseLeave(object sender, MouseEventArgs e)
     {
-        if (_isPinned)
+        // Collapse is handled by the hover watcher, which tolerates the island
+        // resizing under a stationary cursor (no enter/leave flapping).
+    }
+
+    private void OnHoverTimerTick(object? sender, EventArgs e)
+    {
+        if (_isPinned || !_isExpanded)
         {
             return;
         }
 
-        _collapseTimer.Stop();
-        _collapseTimer.Start();
-    }
-
-    private void OnCollapseTimerTick(object? sender, EventArgs e)
-    {
-        _collapseTimer.Stop();
-        if (!_isPinned && !IsMouseOver)
+        if (IsCursorWithinHoverZone())
         {
+            _outsideHoverTicks = 0;
+            return;
+        }
+
+        _outsideHoverTicks++;
+        if (_outsideHoverTicks >= 3)
+        {
+            _outsideHoverTicks = 0;
             Collapse();
         }
+    }
+
+    private bool IsCursorWithinHoverZone()
+    {
+        // WPF's Mouse.GetPosition only tracks positions from received mouse
+        // messages, so it goes stale over the transparent parts of the window.
+        // Use the real cursor position instead.
+        if (!NativeMethods.GetCursorPos(out var cursor))
+        {
+            return true;
+        }
+
+        var topLeft = Island.PointToScreen(new Point(0, 0));
+        const double padding = 18;
+
+        return cursor.X >= topLeft.X - padding
+            && cursor.Y >= topLeft.Y - padding
+            && cursor.X <= topLeft.X + Island.ActualWidth + padding
+            && cursor.Y <= topLeft.Y + Island.ActualHeight + padding;
     }
 
     private void OnIslandClick(object sender, MouseButtonEventArgs e)
@@ -660,6 +686,8 @@ public partial class MainWindow : Window
 
         MarkTransition("Expand");
         _isExpanded = true;
+        _outsideHoverTicks = 0;
+        _hoverTimer.Start();
         CollapsedContent.Width = CollapsedTargetWidth();
         ExpandedContent.Visibility = Visibility.Visible;
         ExpandedContent.BeginAnimation(OpacityProperty, null);
@@ -690,6 +718,8 @@ public partial class MainWindow : Window
 
         MarkTransition("Collapse");
         _isExpanded = false;
+        _hoverTimer.Stop();
+        _outsideHoverTicks = 0;
         if (CollapsedContent.Visibility != Visibility.Visible)
         {
             CollapsedContent.Visibility = Visibility.Visible;
