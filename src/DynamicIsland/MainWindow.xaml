@@ -6,7 +6,7 @@
         xmlns:views="clr-namespace:DynamicIsland.Views"
         mc:Ignorable="d"
         Title="Dynamic Island"
-        Width="400" Height="280"
+        Width="480" Height="320"
         WindowStyle="None"
         AllowsTransparency="True"
         Background="{x:Null}"
@@ -77,6 +77,11 @@
                             Command="{Binding OpenSectionCommand}" CommandParameter="Translator">
                         <TextBlock Text="文A" FontSize="12"
                                    Opacity="{Binding DataContext.SelectedSection, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource EqualsToOpacity}, ConverterParameter=Translator}" />
+                    </Button>
+                    <Button Style="{StaticResource IconButton}" Width="32" Height="30" Margin="4,0,0,0" ToolTip="Пипетка"
+                            Command="{Binding OpenSectionCommand}" CommandParameter="ColorPicker">
+                        <Path Data="{StaticResource IconColorPicker}" Style="{StaticResource Icon}" Width="17" Height="17"
+                              Opacity="{Binding DataContext.SelectedSection, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource EqualsToOpacity}, ConverterParameter=ColorPicker}" />
                     </Button>
                     <Button Style="{StaticResource IconButton}" Width="32" Height="30" Margin="8,0,0,0" ToolTip="Развернуть"
                             Click="OnExpandClick">
@@ -164,6 +169,11 @@
                             <TextBlock Text="文A" FontSize="12"
                                        Opacity="{Binding DataContext.SelectedSection, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource EqualsToOpacity}, ConverterParameter=Translator}" />
                         </Button>
+                        <Button Style="{StaticResource IconButton}" Width="32" Height="30" Margin="4,0,0,0" ToolTip="Пипетка"
+                                Command="{Binding OpenSectionCommand}" CommandParameter="ColorPicker">
+                            <Path Data="{StaticResource IconColorPicker}" Style="{StaticResource Icon}" Width="17" Height="17"
+                                  Opacity="{Binding DataContext.SelectedSection, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource EqualsToOpacity}, ConverterParameter=ColorPicker}" />
+                        </Button>
                         <Button Style="{StaticResource IconButton}" Width="32" Height="30" Margin="8,0,0,0" ToolTip="Свернуть"
                                 Click="OnCollapseClick">
                             <Path Data="{StaticResource IconChevronUp}" Style="{StaticResource Icon}" Width="12" Height="12"
@@ -189,9 +199,13 @@
                                                        Visibility="Hidden"
                                                        Opacity="0" />
                                 <views:TranslatorView x:Name="TranslatorSection"
-                                                      DataContext="{Binding Translator}"
-                                                      Visibility="Hidden"
-                                                      Opacity="0" />
+                                                         DataContext="{Binding Translator}"
+                                                         Visibility="Hidden"
+                                                         Opacity="0" />
+                                <views:ColorPickerView x:Name="ColorPickerSection"
+                                                       DataContext="{Binding ColorPicker}"
+                                                       Visibility="Hidden"
+                                                       Opacity="0" />
                             </Grid>
                         </Grid>
                     </Border>

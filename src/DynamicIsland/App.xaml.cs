@@ -74,11 +74,13 @@ public partial class App : Application
         services.AddSingleton<IClipboardService, ClipboardService>();
         services.AddSingleton<IScreenshotService, ScreenshotService>();
         services.AddSingleton<ITranslationService, GoogleTranslationService>();
+        services.AddSingleton<IScreenColorPicker, ScreenColorPickerService>();
 
         services.AddSingleton<MusicViewModel>();
         services.AddSingleton<ClipboardViewModel>();
         services.AddSingleton<ScreenshotsViewModel>();
         services.AddSingleton<TranslatorViewModel>();
+        services.AddSingleton<ColorPickerViewModel>();
         services.AddSingleton<MainViewModel>();
 
         services.AddSingleton<MainWindow>();

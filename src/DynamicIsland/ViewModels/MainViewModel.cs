@@ -10,6 +10,7 @@ public enum IslandSection
     Clipboard,
     Screenshots,
     Translator,
+    ColorPicker,
 }
 
 public sealed partial class MainViewModel : ObservableObject
@@ -21,12 +22,14 @@ public sealed partial class MainViewModel : ObservableObject
         MusicViewModel music,
         ClipboardViewModel clipboard,
         ScreenshotsViewModel screenshots,
-        TranslatorViewModel translator)
+        TranslatorViewModel translator,
+        ColorPickerViewModel colorPicker)
     {
         Music = music;
         Clipboard = clipboard;
         Screenshots = screenshots;
         Translator = translator;
+        ColorPicker = colorPicker;
 
         Music.PropertyChanged += OnMusicPropertyChanged;
     }
@@ -38,6 +41,8 @@ public sealed partial class MainViewModel : ObservableObject
     public ScreenshotsViewModel Screenshots { get; }
 
     public TranslatorViewModel Translator { get; }
+
+    public ColorPickerViewModel ColorPicker { get; }
 
     public bool ShowMiniPlayer => Music.Track.HasTrack;
 

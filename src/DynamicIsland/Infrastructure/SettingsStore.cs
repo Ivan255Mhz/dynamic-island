@@ -8,6 +8,8 @@ namespace DynamicIsland.Infrastructure;
 public sealed class AppSettings
 {
     public IslandDock Dock { get; set; } = IslandDock.Top;
+
+    public string LastColor { get; set; } = "#8B5CF6";
 }
 
 /// <summary>Persists user preferences as JSON under %APPDATA%\DynamicIsland.</summary>
@@ -25,7 +27,30 @@ internal static class SettingsStore
 
     private static readonly string FilePath = Path.Combine(FolderPath, "settings.json");
 
-    public static AppSettings Load()
+    private static AppSettings? _current;
+
+    /// <summary>Shared settings instance so different parts do not clobber each other.</summary>
+    public static AppSettings Current => _current ??= Load();
+
+    public static void Save()
+    {
+        if (_current is null)
+        {
+            return;
+        }
+
+        try
+        {
+            Directory.CreateDirectory(FolderPath);
+            File.WriteAllText(FilePath, JsonSerializer.Serialize(_current, Options));
+        }
+        catch
+        {
+            // Preferences are best-effort.
+        }
+    }
+
+    private static AppSettings Load()
     {
         try
         {
@@ -41,18 +66,5 @@ internal static class SettingsStore
         }
 
         return new AppSettings();
-    }
-
-    public static void Save(AppSettings settings)
-    {
-        try
-        {
-            Directory.CreateDirectory(FolderPath);
-            File.WriteAllText(FilePath, JsonSerializer.Serialize(settings, Options));
-        }
-        catch
-        {
-            // Preferences are best-effort.
-        }
     }
 }

@@ -1,0 +1,47 @@
+<UserControl x:Class="DynamicIsland.Views.ColorWheel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
+             Width="160" Height="160">
+    <Grid x:Name="Root" Background="Transparent">
+        <Image x:Name="RingImage" Stretch="Fill" />
+
+        <Border x:Name="SvBox"
+                Width="84" Height="84"
+                CornerRadius="8"
+                ClipToBounds="True"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center">
+            <Grid>
+                <Rectangle x:Name="SvBase" />
+                <Rectangle>
+                    <Rectangle.Fill>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                            <GradientStop Color="#FFFFFFFF" Offset="0" />
+                            <GradientStop Color="#00FFFFFF" Offset="1" />
+                        </LinearGradientBrush>
+                    </Rectangle.Fill>
+                </Rectangle>
+                <Rectangle>
+                    <Rectangle.Fill>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                            <GradientStop Color="#00000000" Offset="0" />
+                            <GradientStop Color="#FF000000" Offset="1" />
+                        </LinearGradientBrush>
+                    </Rectangle.Fill>
+                </Rectangle>
+            </Grid>
+            <Border.BorderBrush>
+                <SolidColorBrush Color="#33FFFFFF" />
+            </Border.BorderBrush>
+            <Border.BorderThickness>1</Border.BorderThickness>
+        </Border>
+
+        <Canvas x:Name="Markers" IsHitTestVisible="False">
+            <Ellipse x:Name="HueMarker" Width="10" Height="10" Stroke="White" StrokeThickness="2" />
+            <Ellipse x:Name="SvMarker" Width="13" Height="13" Stroke="White" StrokeThickness="2" />
+        </Canvas>
+    </Grid>
+</UserControl>

@@ -106,6 +106,13 @@
         </Setter>
     </Style>
 
+    <!-- Format chip for the color picker -->
+    <Style x:Key="ChipButton" TargetType="Button" BasedOn="{StaticResource TextButton}">
+        <Setter Property="Padding" Value="14,5" />
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="Margin" Value="0,0,6,0" />
+    </Style>
+
     <!-- Home menu tile -->
     <Style x:Key="TileButton" TargetType="Button">
         <Setter Property="Background" Value="Transparent" />

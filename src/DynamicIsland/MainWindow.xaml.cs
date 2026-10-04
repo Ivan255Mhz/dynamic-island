@@ -11,13 +11,14 @@ using DynamicIsland.Animations;
 using DynamicIsland.Infrastructure;
 using DynamicIsland.Interop;
 using DynamicIsland.Models;
+using DynamicIsland.Services;
 using DynamicIsland.ViewModels;
 
 namespace DynamicIsland;
 
 public partial class MainWindow : Window
 {
-    private const double RailWidth = 210;
+    private const double RailWidth = 240;
     private const double MiniWidth = 252;
     private const double CollapsedHeight = 40;
     private const double CollapsedRadius = 20;
@@ -27,6 +28,8 @@ public partial class MainWindow : Window
     private const double ScreenshotsHeight = 136;
     private const double ClipboardHeight = 238;
     private const double TranslatorHeight = 260;
+    private const double ColorPickerWidth = 440;
+    private const double ColorPickerHeight = 240;
     private const double ExpandedRadius = 22;
 
     private const double ExpandMs = 460;
@@ -42,6 +45,7 @@ public partial class MainWindow : Window
 
     private readonly DispatcherTimer _hoverTimer;
     private readonly AppSettings _settings;
+    private readonly IScreenColorPicker _screenPicker;
     private readonly Dictionary<IslandDock, MenuItem> _dockItems = new();
 
     private MainViewModel? _viewModel;
@@ -53,7 +57,7 @@ public partial class MainWindow : Window
     private ContextMenu? _trayMenu;
     private MenuItem? _autostartItem;
 
-    public MainWindow()
+    public MainWindow(IScreenColorPicker screenPicker)
     {
         InitializeComponent();
 
@@ -63,7 +67,11 @@ public partial class MainWindow : Window
             Background = Brushes.Black;
         }
 
-        _settings = SettingsStore.Load();
+        _screenPicker = screenPicker;
+        _screenPicker.PickStarted += (_, _) => EnterPicking();
+        _screenPicker.PickFinished += (_, _) => ExitPicking();
+
+        _settings = SettingsStore.Current;
         _dock = _settings.Dock;
         BorderEx.Dock = _dock;
 
@@ -414,7 +422,7 @@ public partial class MainWindow : Window
         _dock = dock;
         _settings.Dock = dock;
         BorderEx.Dock = dock;
-        SettingsStore.Save(_settings);
+        SettingsStore.Save();
         ApplyDock();
     }
 
@@ -526,6 +534,7 @@ public partial class MainWindow : Window
         IslandSection.Clipboard => ClipboardSection,
         IslandSection.Screenshots => ScreenshotsSection,
         IslandSection.Translator => TranslatorSection,
+        IslandSection.ColorPicker => ColorPickerSection,
         _ => MusicSection,
     };
 
@@ -534,7 +543,7 @@ public partial class MainWindow : Window
         var target = SectionElement(section);
         var duration = animated ? 180.0 : 0.0;
 
-        foreach (var element in new FrameworkElement[] { MusicSection, ClipboardSection, ScreenshotsSection, TranslatorSection })
+        foreach (var element in new FrameworkElement[] { MusicSection, ClipboardSection, ScreenshotsSection, TranslatorSection, ColorPickerSection })
         {
             if (ReferenceEquals(element, target))
             {
@@ -567,6 +576,24 @@ public partial class MainWindow : Window
                     element.Visibility = Visibility.Hidden;
                 }
             }
+        }
+    }
+
+    private void EnterPicking()
+    {
+        _isPinned = true;
+        _hoverTimer.Stop();
+        Hide();
+    }
+
+    private void ExitPicking()
+    {
+        Show();
+
+        if (_isExpanded)
+        {
+            _outsideHoverTicks = 0;
+            _hoverTimer.Start();
         }
     }
 
@@ -742,6 +769,7 @@ public partial class MainWindow : Window
             IslandSection.Music => (DetailWidth, MusicHeight),
             IslandSection.Screenshots => (DetailWidth, ScreenshotsHeight),
             IslandSection.Translator => (DetailWidth, TranslatorHeight),
+            IslandSection.ColorPicker => (ColorPickerWidth, ColorPickerHeight),
             _ => (DetailWidth, ClipboardHeight),
         };
     }
