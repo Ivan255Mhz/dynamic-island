@@ -34,11 +34,11 @@ public partial class MainWindow : Window
 
     private const double ExpandMs = 460;
     private const double CollapseMs = 320;
-    private const double MorphMs = 360;
+    private const double MorphMs = 260;
     private const double ContentFadeMs = 260;
 
     private static readonly SpringEase ExpandSpring = new() { Damping = 1.0, Frequency = 10.5 };
-    private static readonly SpringEase MorphSpring = new() { Damping = 1.0, Frequency = 12.5 };
+    private static readonly SpringEase MorphSpring = new() { Damping = 1.0, Frequency = 14.0 };
     private static readonly CubicEase EaseOut = new() { EasingMode = EasingMode.EaseOut };
     private static readonly CubicEase CollapseEase = new() { EasingMode = EasingMode.EaseInOut };
     private static readonly QuadraticEase EaseIn = new() { EasingMode = EasingMode.EaseIn };
@@ -544,7 +544,7 @@ public partial class MainWindow : Window
     private void SwitchSection(IslandSection section, bool animated)
     {
         var target = SectionElement(section);
-        var duration = animated ? 140.0 : 0.0;
+        var duration = animated ? 110.0 : 0.0;
 
         foreach (var element in new FrameworkElement[] { MusicSection, ClipboardSection, ScreenshotsSection, TranslatorSection, ColorPickerSection })
         {
