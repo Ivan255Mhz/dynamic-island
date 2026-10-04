@@ -14,52 +14,58 @@
             <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
 
-        <StackPanel Grid.Column="0" Margin="0,0,16,0" VerticalAlignment="Center">
-            <!-- Swatch + hex + copy -->
-            <Grid Height="44">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
+        <Grid Grid.Column="0" Margin="0,0,16,0" VerticalAlignment="Center">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="44" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
 
-                <Border Width="44" Height="44" CornerRadius="12"
-                        Background="{Binding SwatchBrush}"
-                        BorderBrush="#33FFFFFF" BorderThickness="1" />
+            <!-- Row: swatch + hex + copy -->
+            <Border Grid.Row="0" Grid.Column="0"
+                    Width="44" Height="44" CornerRadius="12"
+                    Background="{Binding SwatchBrush}"
+                    BorderBrush="#33FFFFFF" BorderThickness="1" />
 
-                <TextBox Grid.Column="1"
-                         Style="{StaticResource FieldTextBox}"
-                         Margin="10,0,8,0"
-                         VerticalAlignment="Center"
-                         TextAlignment="Left"
-                         Text="{Binding HexText, UpdateSourceTrigger=PropertyChanged}">
-                    <TextBox.InputBindings>
-                        <KeyBinding Key="Enter" Command="{Binding ApplyHexCommand}" />
-                    </TextBox.InputBindings>
-                </TextBox>
+            <TextBox Grid.Row="0" Grid.Column="1"
+                     Style="{StaticResource FieldTextBox}"
+                     Margin="10,0,8,0"
+                     VerticalAlignment="Center"
+                     TextAlignment="Left"
+                     Text="{Binding HexText, UpdateSourceTrigger=PropertyChanged}">
+                <TextBox.InputBindings>
+                    <KeyBinding Key="Enter" Command="{Binding ApplyHexCommand}" />
+                </TextBox.InputBindings>
+            </TextBox>
 
-                <Button Grid.Column="2"
-                        Style="{StaticResource IconButton}"
-                        Width="30" Height="30"
-                        ToolTip="Скопировать HEX"
-                        Command="{Binding CopyHexCommand}">
-                    <Path Data="{StaticResource IconCopy}" Style="{StaticResource Icon}" Width="15" Height="15" />
-                </Button>
-            </Grid>
+            <Button Grid.Row="0" Grid.Column="2"
+                    Style="{StaticResource IconButton}"
+                    Width="30" Height="30"
+                    ToolTip="Скопировать HEX"
+                    Command="{Binding CopyHexCommand}">
+                <Path Data="{StaticResource IconCopy}" Style="{StaticResource Icon}" Width="15" Height="15" />
+            </Button>
 
-            <!-- Eyedropper -->
-            <Button Style="{StaticResource TextButton}"
-                    HorizontalAlignment="Left"
-                    HorizontalContentAlignment="Left"
-                    Padding="10,6"
-                    Margin="0,12,0,0"
+            <!-- Eyedropper: same width as the hex field, content centered -->
+            <Button Grid.Row="1" Grid.Column="1"
+                    Style="{StaticResource TextButton}"
+                    HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Center"
+                    FontSize="11"
+                    Padding="8,5"
+                    Margin="10,12,8,0"
+                    ToolTip="Взять цвет с экрана"
                     Command="{Binding PickCommand}">
                 <StackPanel Orientation="Horizontal">
-                    <Path Data="{StaticResource IconPipette}" Style="{StaticResource Icon}" Width="15" Height="15" />
-                    <TextBlock Text="Взять с экрана" Margin="8,0,0,0" VerticalAlignment="Center" />
+                    <Path Data="{StaticResource IconPipette}" Style="{StaticResource Icon}" Width="14" Height="14" />
+                    <TextBlock Text="С экрана" Margin="6,0,0,0" VerticalAlignment="Center" />
                 </StackPanel>
             </Button>
-        </StackPanel>
+        </Grid>
 
         <views:ColorWheel Grid.Column="1"
                           VerticalAlignment="Center"
