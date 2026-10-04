@@ -403,10 +403,11 @@
     </Style>
 
     <!-- Filled input field (same look as the dropdown pills). Must come after
-         the implicit TextBox style so BasedOn can resolve it. -->
+         the implicit TextBox style so BasedOn can resolve it. Padding stays
+         symmetrical so the text line is never vertically clipped. -->
     <Style x:Key="FieldTextBox" TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
         <Setter Property="Background" Value="#1AFFFFFF" />
-        <Setter Property="Padding" Value="10,6,10,7" />
+        <Setter Property="Padding" Value="10,4" />
         <Setter Property="FontSize" Value="13" />
     </Style>
 

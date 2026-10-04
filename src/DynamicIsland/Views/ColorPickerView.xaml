@@ -40,7 +40,6 @@
                 <!-- Row: hex + copy -->
                 <TextBox Grid.Row="0" Grid.Column="0"
                          Style="{StaticResource FieldTextBox}"
-                         Height="36"
                          VerticalAlignment="Center"
                          TextAlignment="Left"
                          Text="{Binding HexText, UpdateSourceTrigger=PropertyChanged}">
