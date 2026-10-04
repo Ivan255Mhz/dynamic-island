@@ -35,10 +35,12 @@ public partial class MainWindow : Window
     private const double ExpandMs = 460;
     private const double CollapseMs = 320;
     private const double MorphMs = 260;
+    private const double UnfoldMs = 220;
     private const double ContentFadeMs = 260;
 
     private static readonly SpringEase ExpandSpring = new() { Damping = 1.0, Frequency = 10.5 };
     private static readonly SpringEase MorphSpring = new() { Damping = 1.0, Frequency = 14.0 };
+    private static readonly SpringEase UnfoldSpring = new() { Damping = 1.0, Frequency = 12.0 };
     private static readonly CubicEase EaseOut = new() { EasingMode = EasingMode.EaseOut };
     private static readonly CubicEase CollapseEase = new() { EasingMode = EasingMode.EaseInOut };
     private static readonly QuadraticEase EaseIn = new() { EasingMode = EasingMode.EaseIn };
@@ -46,6 +48,7 @@ public partial class MainWindow : Window
     private readonly DispatcherTimer _hoverTimer;
     private readonly AppSettings _settings;
     private readonly IScreenColorPicker _screenPicker;
+    private readonly FrameworkElement[] _sections;
     private readonly Dictionary<IslandDock, MenuItem> _dockItems = new();
 
     private MainViewModel? _viewModel;
@@ -70,6 +73,21 @@ public partial class MainWindow : Window
         _screenPicker = screenPicker;
         _screenPicker.PickStarted += (_, _) => EnterPicking();
         _screenPicker.PickFinished += (_, _) => ExitPicking();
+
+        _sections = new FrameworkElement[]
+        {
+            MusicSection,
+            ClipboardSection,
+            ScreenshotsSection,
+            TranslatorSection,
+            ColorPickerSection,
+        };
+
+        foreach (var element in _sections)
+        {
+            element.RenderTransformOrigin = new Point(0.5, 0.5);
+            element.RenderTransform = new ScaleTransform(1, 1);
+        }
 
         _ = Task.Run(Views.ColorWheel.Prewarm);
 
@@ -546,21 +564,28 @@ public partial class MainWindow : Window
         var target = SectionElement(section);
         var duration = animated ? 110.0 : 0.0;
 
-        foreach (var element in new FrameworkElement[] { MusicSection, ClipboardSection, ScreenshotsSection, TranslatorSection, ColorPickerSection })
+        foreach (var element in _sections)
         {
             if (ReferenceEquals(element, target))
             {
                 Panel.SetZIndex(element, 2);
                 element.Visibility = Visibility.Visible;
 
+                var scale = (ScaleTransform)element.RenderTransform;
+
                 if (animated)
                 {
                     Fade(element, 0, 1, duration, EaseOut);
+                    AnimateUnfold(scale);
                 }
                 else
                 {
                     element.BeginAnimation(OpacityProperty, null);
                     element.Opacity = 1;
+                    scale.BeginAnimation(ScaleTransform.ScaleXProperty, null);
+                    scale.BeginAnimation(ScaleTransform.ScaleYProperty, null);
+                    scale.ScaleX = 1;
+                    scale.ScaleY = 1;
                 }
             }
             else if (element.Visibility == Visibility.Visible)
@@ -580,6 +605,19 @@ public partial class MainWindow : Window
                 }
             }
         }
+    }
+
+    /// <summary>Grows the content from the middle when a section becomes active.</summary>
+    private static void AnimateUnfold(ScaleTransform scale)
+    {
+        var duration = TimeSpan.FromMilliseconds(UnfoldMs);
+
+        scale.BeginAnimation(
+            ScaleTransform.ScaleXProperty,
+            new DoubleAnimation(0.9, 1, duration) { EasingFunction = UnfoldSpring });
+        scale.BeginAnimation(
+            ScaleTransform.ScaleYProperty,
+            new DoubleAnimation(0.9, 1, duration) { EasingFunction = UnfoldSpring });
     }
 
     private void EnterPicking()
