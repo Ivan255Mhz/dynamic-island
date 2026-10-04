@@ -8,7 +8,7 @@
              d:DesignHeight="224" d:DesignWidth="440"
              FontFamily="{StaticResource UiFont}"
              Foreground="{StaticResource TextPrimaryBrush}">
-    <Grid Width="400" HorizontalAlignment="Center" Margin="2,0,0,0">
+    <Grid Width="400" HorizontalAlignment="Center">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="Auto" />
@@ -25,12 +25,13 @@
 
                 <Border Width="44" Height="44" CornerRadius="12"
                         Background="{Binding SwatchBrush}"
-                        BorderBrush="#1FFFFFFF" BorderThickness="1" />
+                        BorderBrush="#33FFFFFF" BorderThickness="1" />
 
                 <TextBox Grid.Column="1"
                          Style="{StaticResource FieldTextBox}"
                          Margin="10,0,8,0"
                          VerticalAlignment="Center"
+                         TextAlignment="Left"
                          Text="{Binding HexText, UpdateSourceTrigger=PropertyChanged}">
                     <TextBox.InputBindings>
                         <KeyBinding Key="Enter" Command="{Binding ApplyHexCommand}" />
@@ -49,6 +50,8 @@
             <!-- Eyedropper -->
             <Button Style="{StaticResource TextButton}"
                     HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Left"
+                    Padding="10,6"
                     Margin="0,12,0,0"
                     Command="{Binding PickCommand}">
                 <StackPanel Orientation="Horizontal">
