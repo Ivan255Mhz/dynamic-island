@@ -4,13 +4,13 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              mc:Ignorable="d"
-             Width="160" Height="160">
+             Width="144" Height="144">
     <Grid x:Name="Root" Background="Transparent">
         <Image x:Name="RingImage" Stretch="Fill" RenderOptions.BitmapScalingMode="HighQuality" />
 
         <Border x:Name="SvBox"
-                Width="72" Height="72"
-                CornerRadius="8"
+                Width="60" Height="60"
+                CornerRadius="14"
                 ClipToBounds="True"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center">
@@ -33,10 +33,6 @@
                     </Rectangle.Fill>
                 </Rectangle>
             </Grid>
-            <Border.BorderBrush>
-                <SolidColorBrush Color="#1FFFFFFF" />
-            </Border.BorderBrush>
-            <Border.BorderThickness>1</Border.BorderThickness>
         </Border>
 
         <Canvas x:Name="Markers" IsHitTestVisible="False">

@@ -29,7 +29,7 @@ public partial class MainWindow : Window
     private const double ClipboardHeight = 238;
     private const double TranslatorHeight = 260;
     private const double ColorPickerWidth = 440;
-    private const double ColorPickerHeight = 240;
+    private const double ColorPickerHeight = 224;
     private const double ExpandedRadius = 22;
 
     private const double ExpandMs = 460;
